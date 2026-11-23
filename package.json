@@ -1,0 +1,26 @@
+{
+  "name": "comfort-route-backend",
+  "version": "1.0.0",
+  "description": "Crowdedness-Aware Journey Planner Backend MVP for Delhi Transit",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "transit",
+    "delhi",
+    "journey-planner",
+    "crowding",
+    "comfort-score",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}
