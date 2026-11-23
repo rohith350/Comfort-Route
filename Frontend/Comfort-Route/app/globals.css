@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+:root {
+  --background: #080a0d;
+  --foreground: #ededed;
+}
+
+body {
+  margin: 0;
+  background-color: #080a0d !important;
+  color: #ededed !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #080a0d;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a2129;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #25313d;
+}
+
+/* Leaflet dark map tiles styling */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #080a0d !important;
+  font-family: inherit !important;
+}
+
+.dark-map-tiles .leaflet-tile {
+  filter: brightness(0.62) invert(1) contrast(2.6) hue-rotate(200deg) saturate(0.2) brightness(0.65);
+}
+
+.leaflet-popup-content-wrapper {
+  background: #0d1115 !important;
+  color: #f3f4f6 !important;
+  border: 1px solid #1a2129 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9) !important;
+}
+
+.leaflet-popup-tip {
+  background: #0d1115 !important;
+}
