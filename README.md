@@ -21,19 +21,22 @@ A production-ready, crowdedness-aware journey planning API for Delhi transit bui
 
 ```text
 Comfort-Route/
-├── data/
-│   └── corridors.json          # Curated dataset of 4 Delhi corridors & stops
-├── routes/
-│   └── transitRoutes.js        # Express routes for stops, planning, and crowdsourcing
-├── services/
-│   ├── crowdStore.js           # In-memory crowdsourced reports store
-│   └── scoringEngine.js        # Stop-by-stop load propagation & comfort scoring engine
-├── test/
-│   ├── test_backend.js         # Unit tests for scoring engine & dataset
-│   └── test_api_integration.js # Integration tests for HTTP endpoints
-├── package.json                # Project dependencies and scripts (ES Modules)
-├── server.js                   # Main Express application entrypoint
-└── README.md                   # Documentation & API reference
+├── backend/
+│   ├── data/
+│   │   └── corridors.json          # Curated dataset of 4 Delhi corridors & stops
+│   ├── routes/
+│   │   └── transitRoutes.js        # Express routes for stops, planning, and crowdsourcing
+│   ├── services/
+│   │   ├── crowdStore.js           # In-memory crowdsourced reports store
+│   │   └── scoringEngine.js        # Stop-by-stop load propagation & comfort scoring engine
+│   ├── test/
+│   │   ├── test_backend.js         # Unit tests for scoring engine & dataset
+│   │   └── test_api_integration.js # Integration tests for HTTP endpoints
+│   ├── .gitignore                  # Backend-specific ignore rules
+│   ├── package.json                # Dependencies and scripts (ES Modules)
+│   └── server.js                   # Main Express application entrypoint
+├── LICENSE
+└── README.md                       # Documentation & API reference
 ```
 
 ---
@@ -42,17 +45,20 @@ Comfort-Route/
 
 ### 1. Install Dependencies
 ```bash
+cd backend
 npm install
 ```
 
 ### 2. Run the Server
 ```bash
+cd backend
 npm start
 ```
 The server will start on port `5000` (or `process.env.PORT`).
 
 ### 3. Run Automated Tests
 ```bash
+cd backend
 npm test
 ```
 
