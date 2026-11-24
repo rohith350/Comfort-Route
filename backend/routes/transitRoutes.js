@@ -47,7 +47,8 @@ router.get('/stops', (req, res) => {
               name: stop.name,
               lat: stop.lat,
               lng: stop.lng,
-              is_metro: Boolean(stop.is_metro)
+              is_metro: Boolean(stop.is_metro),
+              context_tag: stop.context_tag || (stop.is_metro ? 'Metro Interchange' : 'Bus Stop')
             });
           }
         });

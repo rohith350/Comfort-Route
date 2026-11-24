@@ -7,6 +7,7 @@ export interface ApiStop {
   lat: number;
   lng: number;
   is_metro: boolean;
+  context_tag?: string;
 }
 
 export interface ApiScoredStop {
@@ -16,12 +17,13 @@ export interface ApiScoredStop {
   lng: number;
   load_pct: number;
   is_metro: boolean;
+  context_tag?: string; // e.g. "Metro Interchange", "Office Hub", "Market Hub"
 }
 
 export interface ApiScoredRoute {
   id: string;
   name: string;
-  tag: 'FASTEST' | 'MOST COMFORTABLE' | 'OPTIMAL' | 'ALTERNATE';
+  tag: 'FASTEST' | 'MOST COMFORTABLE' | 'OPTIMAL' | 'ALTERNATE' | 'WAIT & SIT';
   bus_numbers: string[];
   eta_minutes: number;
   transfers: number;
@@ -30,6 +32,14 @@ export interface ApiScoredRoute {
   status: 'GREEN' | 'YELLOW' | 'RED';
   comfort_score: number;
   stops: ApiScoredStop[];
+
+  // Enhanced Demo & Intelligence Metadata
+  bus_type?: 'DTC Non-AC' | 'Cluster AC Electric' | 'Delhi EV Feeder';
+  headway_text?: string; // e.g. "Every 6 mins"
+  highlight_pill?: string; // e.g. "Wait 12m to get a guaranteed seat"
+  comfort_headline?: string; // e.g. "36% Seats Open"
+  departure_note?: string; // e.g. "Depart 9:27 AM (+12m wait)"
+  category?: 'fastest' | 'comfortable' | 'wait_and_sit';
 }
 
 export interface ApiPlanResponse {

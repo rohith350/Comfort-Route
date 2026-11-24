@@ -13,41 +13,66 @@
       {
         "id": "route_729",
         "name": "Route 729 Direct",
+        "bus_type": "DTC Non-AC",
         "bus_numbers": ["729"],
         "eta_minutes": 42,
         "transfers": 0,
         "headway_mins": 14,
+        "headway_text": "Every 14 mins",
         "stops": [
-          { "id": "uttam_nagar", "name": "Uttam Nagar", "lat": 28.6219, "lng": 77.0583, "is_metro": true, "base_weight": 16 },
-          { "id": "janakpuri_east", "name": "Janakpuri East", "lat": 28.6289, "lng": 77.0787, "is_metro": true, "base_weight": 18 },
-          { "id": "tilak_nagar", "name": "Tilak Nagar", "lat": 28.6366, "lng": 77.0963, "is_metro": true, "base_weight": 15 },
-          { "id": "subhash_nagar", "name": "Subhash Nagar", "lat": 28.6402, "lng": 77.1051, "is_metro": true, "base_weight": 14 },
-          { "id": "rajouri_garden", "name": "Rajouri Garden", "lat": 28.6492, "lng": 77.1225, "is_metro": true, "base_weight": 20 },
-          { "id": "moti_nagar", "name": "Moti Nagar", "lat": 28.6578, "lng": 77.1424, "is_metro": true, "base_weight": 16 },
-          { "id": "shadipur", "name": "Shadipur", "lat": 28.6517, "lng": 77.1582, "is_metro": true, "base_weight": 15 },
-          { "id": "patel_nagar", "name": "Patel Nagar", "lat": 28.6536, "lng": 77.1645, "is_metro": true, "base_weight": 17 },
-          { "id": "karol_bagh", "name": "Karol Bagh", "lat": 28.6441, "lng": 77.1906, "is_metro": true, "base_weight": 22 },
-          { "id": "jhandewalan", "name": "Jhandewalan", "lat": 28.6444, "lng": 77.2005, "is_metro": true, "base_weight": 16 },
-          { "id": "connaught_place", "name": "Connaught Place", "lat": 28.6315, "lng": 77.2167, "is_metro": true, "base_weight": 25 }
+          { "id": "uttam_nagar", "name": "Uttam Nagar", "lat": 28.6219, "lng": 77.0583, "is_metro": true, "base_weight": 16, "context_tag": "Residential Hub" },
+          { "id": "janakpuri_east", "name": "Janakpuri East", "lat": 28.6289, "lng": 77.0787, "is_metro": true, "base_weight": 18, "context_tag": "Metro Interchange" },
+          { "id": "tilak_nagar", "name": "Tilak Nagar", "lat": 28.6366, "lng": 77.0963, "is_metro": true, "base_weight": 15, "context_tag": "Commercial Area" },
+          { "id": "subhash_nagar", "name": "Subhash Nagar", "lat": 28.6402, "lng": 77.1051, "is_metro": true, "base_weight": 14, "context_tag": "Residential Hub" },
+          { "id": "rajouri_garden", "name": "Rajouri Garden", "lat": 28.6492, "lng": 77.1225, "is_metro": true, "base_weight": 20, "context_tag": "Metro Interchange" },
+          { "id": "moti_nagar", "name": "Moti Nagar", "lat": 28.6578, "lng": 77.1424, "is_metro": true, "base_weight": 16, "context_tag": "Industrial Precinct" },
+          { "id": "shadipur", "name": "Shadipur", "lat": 28.6517, "lng": 77.1582, "is_metro": true, "base_weight": 15, "context_tag": "Transit Corridor" },
+          { "id": "patel_nagar", "name": "Patel Nagar", "lat": 28.6536, "lng": 77.1645, "is_metro": true, "base_weight": 17, "context_tag": "Residential Zone" },
+          { "id": "karol_bagh", "name": "Karol Bagh", "lat": 28.6441, "lng": 77.1906, "is_metro": true, "base_weight": 22, "context_tag": "Market Hub" },
+          { "id": "jhandewalan", "name": "Jhandewalan", "lat": 28.6444, "lng": 77.2005, "is_metro": true, "base_weight": 16, "context_tag": "Institutional Hub" },
+          { "id": "connaught_place", "name": "Connaught Place", "lat": 28.6315, "lng": 77.2167, "is_metro": true, "base_weight": 25, "context_tag": "Office Hub" }
         ]
       },
       {
         "id": "route_740_522",
-        "name": "Route 740 + 522 (Transfer at Dhaula Kuan)",
+        "name": "AC Electric E-44 → Metro Feeder",
+        "bus_type": "Cluster AC Electric",
         "bus_numbers": ["740", "522"],
-        "eta_minutes": 50,
+        "eta_minutes": 48,
         "transfers": 1,
-        "headway_mins": 7,
+        "headway_mins": 8,
+        "headway_text": "Every 8 mins",
+        "highlight_pill": "AC Electric corridor · High seating chance",
+        "comfort_headline": "31% Seats Open",
+        "category": "comfortable",
         "stops": [
-          { "id": "uttam_nagar", "name": "Uttam Nagar", "lat": 28.6219, "lng": 77.0583, "is_metro": true, "base_weight": 14 },
-          { "id": "janakpuri_c2", "name": "Janakpuri C-2", "lat": 28.6180, "lng": 77.0850, "is_metro": false, "base_weight": 9 },
-          { "id": "sagarpur", "name": "Sagarpur Crossing", "lat": 28.6012, "lng": 77.0950, "is_metro": false, "base_weight": 8 },
-          { "id": "mayapuri_crossing", "name": "Mayapuri Crossing", "lat": 28.6245, "lng": 77.1310, "is_metro": true, "base_weight": 11 },
-          { "id": "dhaula_kuan", "name": "Dhaula Kuan Interchange", "lat": 28.5921, "lng": 77.1616, "is_metro": true, "base_weight": 13 },
-          { "id": "chanakyapuri", "name": "Chanakyapuri Post Office", "lat": 28.5983, "lng": 77.1856, "is_metro": false, "base_weight": 7 },
-          { "id": "teen_murti", "name": "Teen Murti", "lat": 28.6031, "lng": 77.1995, "is_metro": false, "base_weight": 7 },
-          { "id": "shivaji_stadium", "name": "Shivaji Stadium Bus Terminal", "lat": 28.6288, "lng": 77.2132, "is_metro": true, "base_weight": 11 },
-          { "id": "connaught_place", "name": "Connaught Place", "lat": 28.6315, "lng": 77.2167, "is_metro": true, "base_weight": 14 }
+          { "id": "uttam_nagar", "name": "Uttam Nagar", "lat": 28.6219, "lng": 77.0583, "is_metro": true, "base_weight": 8, "context_tag": "Residential Hub" },
+          { "id": "mayapuri_crossing", "name": "Mayapuri Crossing", "lat": 28.6245, "lng": 77.1310, "is_metro": true, "base_weight": 6, "context_tag": "Arterial Bypass" },
+          { "id": "dhaula_kuan", "name": "Dhaula Kuan Interchange", "lat": 28.5921, "lng": 77.1616, "is_metro": true, "base_weight": 9, "context_tag": "Airport Express Interchange" },
+          { "id": "chanakyapuri", "name": "Chanakyapuri Post Office", "lat": 28.5983, "lng": 77.1856, "is_metro": false, "base_weight": 5, "context_tag": "Diplomatic Enclave" },
+          { "id": "shivaji_stadium", "name": "Shivaji Stadium Bus Terminal", "lat": 28.6288, "lng": 77.2132, "is_metro": true, "base_weight": 7, "context_tag": "CBD Feeder Terminal" },
+          { "id": "connaught_place", "name": "Connaught Place", "lat": 28.6315, "lng": 77.2167, "is_metro": true, "base_weight": 8, "context_tag": "Office Hub" }
+        ]
+      },
+      {
+        "id": "route_729_wait12",
+        "name": "Bus 729 (Depart +12m wait)",
+        "bus_type": "DTC Non-AC",
+        "bus_numbers": ["729"],
+        "eta_minutes": 54,
+        "transfers": 0,
+        "headway_mins": 12,
+        "headway_text": "Next in 12 mins",
+        "highlight_pill": "Wait 12m to get a guaranteed seat",
+        "comfort_headline": "36% Seats Open",
+        "category": "wait_and_sit",
+        "stops": [
+          { "id": "uttam_nagar", "name": "Uttam Nagar", "lat": 28.6219, "lng": 77.0583, "is_metro": true, "base_weight": 7, "context_tag": "Residential Hub" },
+          { "id": "janakpuri_east", "name": "Janakpuri East", "lat": 28.6289, "lng": 77.0787, "is_metro": true, "base_weight": 8, "context_tag": "Metro Interchange" },
+          { "id": "tilak_nagar", "name": "Tilak Nagar", "lat": 28.6366, "lng": 77.0963, "is_metro": true, "base_weight": 7, "context_tag": "Commercial Area" },
+          { "id": "rajouri_garden", "name": "Rajouri Garden", "lat": 28.6492, "lng": 77.1225, "is_metro": true, "base_weight": 9, "context_tag": "Metro Interchange" },
+          { "id": "karol_bagh", "name": "Karol Bagh", "lat": 28.6441, "lng": 77.1906, "is_metro": true, "base_weight": 9, "context_tag": "Market Hub" },
+          { "id": "connaught_place", "name": "Connaught Place", "lat": 28.6315, "lng": 77.2167, "is_metro": true, "base_weight": 9, "context_tag": "Office Hub" }
         ]
       }
     ]
@@ -66,41 +91,61 @@
       {
         "id": "route_429",
         "name": "Route 429 Direct",
+        "bus_type": "DTC Non-AC",
         "bus_numbers": ["429"],
         "eta_minutes": 48,
         "transfers": 0,
         "headway_mins": 15,
+        "headway_text": "Every 15 mins",
         "stops": [
-          { "id": "kashmere_gate", "name": "Kashmere Gate ISBT", "lat": 28.6675, "lng": 77.2285, "is_metro": true, "base_weight": 22 },
-          { "id": "red_fort", "name": "Red Fort", "lat": 28.6562, "lng": 77.2410, "is_metro": true, "base_weight": 19 },
-          { "id": "delhi_gate", "name": "Delhi Gate", "lat": 28.6405, "lng": 77.2403, "is_metro": true, "base_weight": 16 },
-          { "id": "ito", "name": "ITO Crossing", "lat": 28.6288, "lng": 77.2415, "is_metro": true, "base_weight": 22 },
-          { "id": "pragati_maidan", "name": "Pragati Maidan", "lat": 28.6219, "lng": 77.2442, "is_metro": true, "base_weight": 17 },
-          { "id": "sundar_nagar", "name": "Sundar Nagar", "lat": 28.6050, "lng": 77.2458, "is_metro": false, "base_weight": 10 },
-          { "id": "nizamuddin", "name": "Hazrat Nizamuddin", "lat": 28.5916, "lng": 77.2507, "is_metro": true, "base_weight": 18 },
-          { "id": "ashram", "name": "Ashram Chowk", "lat": 28.5714, "lng": 77.2588, "is_metro": true, "base_weight": 20 },
-          { "id": "lajpat_nagar", "name": "Lajpat Nagar Ring Road", "lat": 28.5677, "lng": 77.2433, "is_metro": true, "base_weight": 19 },
-          { "id": "kailash_colony", "name": "Kailash Colony", "lat": 28.5552, "lng": 77.2425, "is_metro": true, "base_weight": 14 },
-          { "id": "nehru_place", "name": "Nehru Place Bus Terminal", "lat": 28.5494, "lng": 77.2529, "is_metro": true, "base_weight": 23 }
+          { "id": "kashmere_gate", "name": "Kashmere Gate ISBT", "lat": 28.6675, "lng": 77.2285, "is_metro": true, "base_weight": 22, "context_tag": "Interstate Hub" },
+          { "id": "red_fort", "name": "Red Fort", "lat": 28.6562, "lng": 77.2410, "is_metro": true, "base_weight": 19, "context_tag": "Heritage Tourist Hub" },
+          { "id": "delhi_gate", "name": "Delhi Gate", "lat": 28.6405, "lng": 77.2403, "is_metro": true, "base_weight": 16, "context_tag": "Old Delhi Terminal" },
+          { "id": "ito", "name": "ITO Crossing", "lat": 28.6288, "lng": 77.2415, "is_metro": true, "base_weight": 22, "context_tag": "Govt & Institutional Hub" },
+          { "id": "pragati_maidan", "name": "Pragati Maidan", "lat": 28.6219, "lng": 77.2442, "is_metro": true, "base_weight": 17, "context_tag": "Exhibition & Trade Hub" },
+          { "id": "nizamuddin", "name": "Hazrat Nizamuddin", "lat": 28.5916, "lng": 77.2507, "is_metro": true, "base_weight": 18, "context_tag": "Railway Terminal" },
+          { "id": "ashram", "name": "Ashram Chowk", "lat": 28.5714, "lng": 77.2588, "is_metro": true, "base_weight": 20, "context_tag": "Ring Road Bottleneck" },
+          { "id": "lajpat_nagar", "name": "Lajpat Nagar Ring Road", "lat": 28.5677, "lng": 77.2433, "is_metro": true, "base_weight": 19, "context_tag": "Commercial Market Hub" },
+          { "id": "kailash_colony", "name": "Kailash Colony", "lat": 28.5552, "lng": 77.2425, "is_metro": true, "base_weight": 14, "context_tag": "Residential Hub" },
+          { "id": "nehru_place", "name": "Nehru Place Bus Terminal", "lat": 28.5494, "lng": 77.2529, "is_metro": true, "base_weight": 23, "context_tag": "IT & Office Hub" }
         ]
       },
       {
-        "id": "route_419",
-        "name": "Route 419 Alternate",
-        "bus_numbers": ["419"],
-        "eta_minutes": 56,
+        "id": "route_ev_419",
+        "name": "Cluster AC Electric EV-419",
+        "bus_type": "Cluster AC Electric",
+        "bus_numbers": ["EV-419"],
+        "eta_minutes": 54,
         "transfers": 0,
-        "headway_mins": 8,
+        "headway_mins": 7,
+        "headway_text": "Every 7 mins",
+        "highlight_pill": "AC Electric express via Sarai Kale Khan bypass",
+        "comfort_headline": "34% Seats Open",
+        "category": "comfortable",
         "stops": [
-          { "id": "kashmere_gate", "name": "Kashmere Gate ISBT", "lat": 28.6675, "lng": 77.2285, "is_metro": true, "base_weight": 15 },
-          { "id": "yamuna_bazaar", "name": "Yamuna Bazaar", "lat": 28.6601, "lng": 77.2355, "is_metro": false, "base_weight": 8 },
-          { "id": "shanti_vana", "name": "Shanti Vana", "lat": 28.6465, "lng": 77.2482, "is_metro": false, "base_weight": 8 },
-          { "id": "geeta_colony_turn", "name": "Geeta Colony Turn", "lat": 28.6380, "lng": 77.2600, "is_metro": false, "base_weight": 9 },
-          { "id": "sarai_kale_khan", "name": "Sarai Kale Khan ISBT", "lat": 28.5912, "lng": 77.2574, "is_metro": true, "base_weight": 13 },
-          { "id": "srinivaspuri", "name": "Srinivaspuri", "lat": 28.5685, "lng": 77.2505, "is_metro": false, "base_weight": 9 },
-          { "id": "moolchand", "name": "Moolchand Hospital", "lat": 28.5661, "lng": 77.2341, "is_metro": true, "base_weight": 12 },
-          { "id": "lady_shri_ram_college", "name": "Lady Shri Ram College", "lat": 28.5580, "lng": 77.2380, "is_metro": false, "base_weight": 9 },
-          { "id": "nehru_place", "name": "Nehru Place Bus Terminal", "lat": 28.5494, "lng": 77.2529, "is_metro": true, "base_weight": 15 }
+          { "id": "kashmere_gate", "name": "Kashmere Gate ISBT", "lat": 28.6675, "lng": 77.2285, "is_metro": true, "base_weight": 8, "context_tag": "Interstate Hub" },
+          { "id": "sarai_kale_khan", "name": "Sarai Kale Khan ISBT", "lat": 28.5912, "lng": 77.2574, "is_metro": true, "base_weight": 9, "context_tag": "ISBT & RRTS Hub" },
+          { "id": "moolchand", "name": "Moolchand Hospital", "lat": 28.5661, "lng": 77.2341, "is_metro": true, "base_weight": 7, "context_tag": "Hospital Hub" },
+          { "id": "nehru_place", "name": "Nehru Place Bus Terminal", "lat": 28.5494, "lng": 77.2529, "is_metro": true, "base_weight": 8, "context_tag": "IT & Office Hub" }
+        ]
+      },
+      {
+        "id": "route_429_wait12",
+        "name": "Bus 429 (Depart +12m wait)",
+        "bus_type": "DTC Non-AC",
+        "bus_numbers": ["429"],
+        "eta_minutes": 60,
+        "transfers": 0,
+        "headway_mins": 12,
+        "headway_text": "Next in 12 mins",
+        "highlight_pill": "Wait 12m to get a guaranteed seat",
+        "comfort_headline": "38% Seats Open",
+        "category": "wait_and_sit",
+        "stops": [
+          { "id": "kashmere_gate", "name": "Kashmere Gate ISBT", "lat": 28.6675, "lng": 77.2285, "is_metro": true, "base_weight": 7, "context_tag": "Interstate Hub" },
+          { "id": "ito", "name": "ITO Crossing", "lat": 28.6288, "lng": 77.2415, "is_metro": true, "base_weight": 8, "context_tag": "Govt & Institutional Hub" },
+          { "id": "lajpat_nagar", "name": "Lajpat Nagar Ring Road", "lat": 28.5677, "lng": 77.2433, "is_metro": true, "base_weight": 8, "context_tag": "Commercial Market Hub" },
+          { "id": "nehru_place", "name": "Nehru Place Bus Terminal", "lat": 28.5494, "lng": 77.2529, "is_metro": true, "base_weight": 8, "context_tag": "IT & Office Hub" }
         ]
       }
     ]
@@ -119,41 +164,59 @@
       {
         "id": "route_534",
         "name": "Route 534 Direct",
+        "bus_type": "DTC Non-AC",
         "bus_numbers": ["534"],
         "eta_minutes": 54,
         "transfers": 0,
         "headway_mins": 16,
+        "headway_text": "Every 16 mins",
         "stops": [
-          { "id": "anand_vihar", "name": "Anand Vihar ISBT", "lat": 28.6469, "lng": 77.3160, "is_metro": true, "base_weight": 22 },
-          { "id": "karkardooma", "name": "Karkardooma Court", "lat": 28.6508, "lng": 77.3031, "is_metro": true, "base_weight": 16 },
-          { "id": "preet_vihar", "name": "Preet Vihar", "lat": 28.6406, "lng": 77.2952, "is_metro": true, "base_weight": 17 },
-          { "id": "laxmi_nagar", "name": "Laxmi Nagar Metro", "lat": 28.6304, "lng": 77.2776, "is_metro": true, "base_weight": 21 },
-          { "id": "shakarpur", "name": "Shakarpur Crossing", "lat": 28.6250, "lng": 77.2700, "is_metro": false, "base_weight": 12 },
-          { "id": "sarai_kale_khan", "name": "Sarai Kale Khan ISBT", "lat": 28.5912, "lng": 77.2574, "is_metro": true, "base_weight": 18 },
-          { "id": "lajpat_nagar", "name": "Lajpat Nagar Ring Road", "lat": 28.5677, "lng": 77.2433, "is_metro": true, "base_weight": 19 },
-          { "id": "andrews_ganj", "name": "Andrews Ganj", "lat": 28.5645, "lng": 77.2255, "is_metro": false, "base_weight": 12 },
-          { "id": "south_extension", "name": "South Extension", "lat": 28.5702, "lng": 77.2185, "is_metro": true, "base_weight": 16 },
-          { "id": "malviya_nagar", "name": "Malviya Nagar", "lat": 28.5282, "lng": 77.2064, "is_metro": true, "base_weight": 17 },
-          { "id": "saket", "name": "Saket Metro Station", "lat": 28.5204, "lng": 77.2015, "is_metro": true, "base_weight": 22 }
+          { "id": "anand_vihar", "name": "Anand Vihar ISBT", "lat": 28.6469, "lng": 77.3160, "is_metro": true, "base_weight": 22, "context_tag": "ISBT & Rail Hub" },
+          { "id": "karkardooma", "name": "Karkardooma Court", "lat": 28.6508, "lng": 77.3031, "is_metro": true, "base_weight": 16, "context_tag": "Court & Institutional Hub" },
+          { "id": "preet_vihar", "name": "Preet Vihar", "lat": 28.6406, "lng": 77.2952, "is_metro": true, "base_weight": 17, "context_tag": "Commercial Hub" },
+          { "id": "laxmi_nagar", "name": "Laxmi Nagar Metro", "lat": 28.6304, "lng": 77.2776, "is_metro": true, "base_weight": 21, "context_tag": "Student Coaching Hub" },
+          { "id": "sarai_kale_khan", "name": "Sarai Kale Khan ISBT", "lat": 28.5912, "lng": 77.2574, "is_metro": true, "base_weight": 18, "context_tag": "ISBT & RRTS Hub" },
+          { "id": "lajpat_nagar", "name": "Lajpat Nagar Ring Road", "lat": 28.5677, "lng": 77.2433, "is_metro": true, "base_weight": 19, "context_tag": "Commercial Market Hub" },
+          { "id": "south_extension", "name": "South Extension", "lat": 28.5702, "lng": 77.2185, "is_metro": true, "base_weight": 16, "context_tag": "High-Street Retail Hub" },
+          { "id": "malviya_nagar", "name": "Malviya Nagar", "lat": 28.5282, "lng": 77.2064, "is_metro": true, "base_weight": 17, "context_tag": "Residential Hub" },
+          { "id": "saket", "name": "Saket Metro Station", "lat": 28.5204, "lng": 77.2015, "is_metro": true, "base_weight": 22, "context_tag": "Commercial District" }
         ]
       },
       {
-        "id": "route_543",
-        "name": "Route 543 Alternate",
-        "bus_numbers": ["543"],
+        "id": "route_ac_543",
+        "name": "AC Electric 543 → Feeder",
+        "bus_type": "Cluster AC Electric",
+        "bus_numbers": ["543-AC"],
         "eta_minutes": 62,
         "transfers": 0,
         "headway_mins": 9,
+        "headway_text": "Every 9 mins",
+        "highlight_pill": "Barapullah elevated expressway AC corridor",
+        "comfort_headline": "35% Seats Open",
+        "category": "comfortable",
         "stops": [
-          { "id": "anand_vihar", "name": "Anand Vihar ISBT", "lat": 28.6469, "lng": 77.3160, "is_metro": true, "base_weight": 16 },
-          { "id": "ghazipur_depot", "name": "Ghazipur Depot", "lat": 28.6280, "lng": 77.3320, "is_metro": false, "base_weight": 10 },
-          { "id": "mayur_vihar_phase_3", "name": "Mayur Vihar Phase 3", "lat": 28.6050, "lng": 77.3250, "is_metro": false, "base_weight": 9 },
-          { "id": "mayur_vihar_pocket_1", "name": "Mayur Vihar Pocket 1", "lat": 28.6042, "lng": 77.2940, "is_metro": true, "base_weight": 13 },
-          { "id": "barapullah_elevated", "name": "Barapullah Roadway", "lat": 28.5800, "lng": 77.2400, "is_metro": false, "base_weight": 7 },
-          { "id": "aiims", "name": "AIIMS Ansari Nagar", "lat": 28.5672, "lng": 77.2100, "is_metro": true, "base_weight": 15 },
-          { "id": "safdarjung_enclave", "name": "Safdarjung Enclave", "lat": 28.5590, "lng": 77.1980, "is_metro": false, "base_weight": 9 },
-          { "id": "iit_delhi", "name": "IIT Delhi Gate", "lat": 28.5450, "lng": 77.1926, "is_metro": true, "base_weight": 12 },
-          { "id": "saket", "name": "Saket Metro Station", "lat": 28.5204, "lng": 77.2015, "is_metro": true, "base_weight": 14 }
+          { "id": "anand_vihar", "name": "Anand Vihar ISBT", "lat": 28.6469, "lng": 77.3160, "is_metro": true, "base_weight": 8, "context_tag": "ISBT & Rail Hub" },
+          { "id": "aiims", "name": "AIIMS Ansari Nagar", "lat": 28.5672, "lng": 77.2100, "is_metro": true, "base_weight": 9, "context_tag": "National Medical Hub" },
+          { "id": "saket", "name": "Saket Metro Station", "lat": 28.5204, "lng": 77.2015, "is_metro": true, "base_weight": 8, "context_tag": "Commercial District" }
+        ]
+      },
+      {
+        "id": "route_534_wait12",
+        "name": "Bus 534 (Depart +12m wait)",
+        "bus_type": "DTC Non-AC",
+        "bus_numbers": ["534"],
+        "eta_minutes": 66,
+        "transfers": 0,
+        "headway_mins": 12,
+        "headway_text": "Next in 12 mins",
+        "highlight_pill": "Wait 12m to get a guaranteed seat",
+        "comfort_headline": "37% Seats Open",
+        "category": "wait_and_sit",
+        "stops": [
+          { "id": "anand_vihar", "name": "Anand Vihar ISBT", "lat": 28.6469, "lng": 77.3160, "is_metro": true, "base_weight": 7, "context_tag": "ISBT & Rail Hub" },
+          { "id": "laxmi_nagar", "name": "Laxmi Nagar Metro", "lat": 28.6304, "lng": 77.2776, "is_metro": true, "base_weight": 8, "context_tag": "Student Coaching Hub" },
+          { "id": "lajpat_nagar", "name": "Lajpat Nagar Ring Road", "lat": 28.5677, "lng": 77.2433, "is_metro": true, "base_weight": 8, "context_tag": "Commercial Market Hub" },
+          { "id": "saket", "name": "Saket Metro Station", "lat": 28.5204, "lng": 77.2015, "is_metro": true, "base_weight": 8, "context_tag": "Commercial District" }
         ]
       }
     ]
@@ -172,39 +235,57 @@
       {
         "id": "route_505",
         "name": "Route 505 Direct",
+        "bus_type": "DTC Non-AC",
         "bus_numbers": ["505"],
         "eta_minutes": 35,
         "transfers": 0,
         "headway_mins": 15,
+        "headway_text": "Every 15 mins",
         "stops": [
-          { "id": "hauz_khas", "name": "Hauz Khas Metro", "lat": 28.5494, "lng": 77.2001, "is_metro": true, "base_weight": 20 },
-          { "id": "green_park", "name": "Green Park", "lat": 28.5588, "lng": 77.2069, "is_metro": true, "base_weight": 18 },
-          { "id": "aiims", "name": "AIIMS Ansari Nagar", "lat": 28.5672, "lng": 77.2100, "is_metro": true, "base_weight": 22 },
-          { "id": "ina_market", "name": "INA Market / Dilli Haat", "lat": 28.5752, "lng": 77.2106, "is_metro": true, "base_weight": 19 },
-          { "id": "safdarjung_tomb", "name": "Safdarjung Tomb", "lat": 28.5893, "lng": 77.2106, "is_metro": false, "base_weight": 11 },
-          { "id": "tughlak_road", "name": "Tughlak Road", "lat": 28.5995, "lng": 77.2115, "is_metro": false, "base_weight": 10 },
-          { "id": "udyog_bhawan", "name": "Udyog Bhawan", "lat": 28.6116, "lng": 77.2120, "is_metro": true, "base_weight": 17 },
-          { "id": "patel_chowk", "name": "Patel Chowk", "lat": 28.6231, "lng": 77.2144, "is_metro": true, "base_weight": 16 },
-          { "id": "rajiv_chowk", "name": "Rajiv Chowk / CP", "lat": 28.6328, "lng": 77.2195, "is_metro": true, "base_weight": 25 }
+          { "id": "hauz_khas", "name": "Hauz Khas Metro", "lat": 28.5494, "lng": 77.2001, "is_metro": true, "base_weight": 20, "context_tag": "Metro Interchange" },
+          { "id": "green_park", "name": "Green Park", "lat": 28.5588, "lng": 77.2069, "is_metro": true, "base_weight": 18, "context_tag": "Commercial Market" },
+          { "id": "aiims", "name": "AIIMS Ansari Nagar", "lat": 28.5672, "lng": 77.2100, "is_metro": true, "base_weight": 22, "context_tag": "National Medical Hub" },
+          { "id": "ina_market", "name": "INA Market / Dilli Haat", "lat": 28.5752, "lng": 77.2106, "is_metro": true, "base_weight": 19, "context_tag": "Market Hub" },
+          { "id": "safdarjung_tomb", "name": "Safdarjung Tomb", "lat": 28.5893, "lng": 77.2106, "is_metro": false, "base_weight": 11, "context_tag": "Heritage Precinct" },
+          { "id": "udyog_bhawan", "name": "Udyog Bhawan", "lat": 28.6116, "lng": 77.2120, "is_metro": true, "base_weight": 17, "context_tag": "Ministry Hub" },
+          { "id": "patel_chowk", "name": "Patel Chowk", "lat": 28.6231, "lng": 77.2144, "is_metro": true, "base_weight": 16, "context_tag": "Office District" },
+          { "id": "rajiv_chowk", "name": "Rajiv Chowk / CP", "lat": 28.6328, "lng": 77.2195, "is_metro": true, "base_weight": 25, "context_tag": "CBD Metro Interchange" }
         ]
       },
       {
-        "id": "route_522A",
-        "name": "Route 522A Alternate",
-        "bus_numbers": ["522A"],
-        "eta_minutes": 43,
+        "id": "route_ac_522a",
+        "name": "Cluster AC Electric 522A",
+        "bus_type": "Cluster AC Electric",
+        "bus_numbers": ["522A-AC"],
+        "eta_minutes": 42,
         "transfers": 0,
         "headway_mins": 8,
+        "headway_text": "Every 8 mins",
+        "highlight_pill": "India Gate arterial route · Guaranteed seating",
+        "comfort_headline": "36% Seats Open",
+        "category": "comfortable",
         "stops": [
-          { "id": "hauz_khas", "name": "Hauz Khas Metro", "lat": 28.5494, "lng": 77.2001, "is_metro": true, "base_weight": 14 },
-          { "id": "siri_fort", "name": "Siri Fort Road", "lat": 28.5535, "lng": 77.2241, "is_metro": false, "base_weight": 8 },
-          { "id": "moolchand", "name": "Moolchand Hospital", "lat": 28.5661, "lng": 77.2341, "is_metro": true, "base_weight": 13 },
-          { "id": "lodhi_colony", "name": "Lodhi Colony", "lat": 28.5833, "lng": 77.2247, "is_metro": false, "base_weight": 9 },
-          { "id": "golf_links", "name": "Golf Links", "lat": 28.5985, "lng": 77.2330, "is_metro": false, "base_weight": 8 },
-          { "id": "india_gate", "name": "India Gate Hexagon", "lat": 28.6129, "lng": 77.2295, "is_metro": false, "base_weight": 10 },
-          { "id": "national_museum", "name": "National Museum", "lat": 28.6118, "lng": 77.2190, "is_metro": false, "base_weight": 8 },
-          { "id": "shivaji_stadium", "name": "Shivaji Stadium Bus Terminal", "lat": 28.6288, "lng": 77.2132, "is_metro": true, "base_weight": 12 },
-          { "id": "rajiv_chowk", "name": "Rajiv Chowk / CP", "lat": 28.6328, "lng": 77.2195, "is_metro": true, "base_weight": 16 }
+          { "id": "hauz_khas", "name": "Hauz Khas Metro", "lat": 28.5494, "lng": 77.2001, "is_metro": true, "base_weight": 8, "context_tag": "Metro Interchange" },
+          { "id": "india_gate", "name": "India Gate Hexagon", "lat": 28.6129, "lng": 77.2295, "is_metro": false, "base_weight": 8, "context_tag": "Boulevard Arterial" },
+          { "id": "rajiv_chowk", "name": "Rajiv Chowk / CP", "lat": 28.6328, "lng": 77.2195, "is_metro": true, "base_weight": 8, "context_tag": "CBD Metro Interchange" }
+        ]
+      },
+      {
+        "id": "route_505_wait12",
+        "name": "Bus 505 (Depart +12m wait)",
+        "bus_type": "DTC Non-AC",
+        "bus_numbers": ["505"],
+        "eta_minutes": 47,
+        "transfers": 0,
+        "headway_mins": 12,
+        "headway_text": "Next in 12 mins",
+        "highlight_pill": "Wait 12m to get a guaranteed seat",
+        "comfort_headline": "38% Seats Open",
+        "category": "wait_and_sit",
+        "stops": [
+          { "id": "hauz_khas", "name": "Hauz Khas Metro", "lat": 28.5494, "lng": 77.2001, "is_metro": true, "base_weight": 7, "context_tag": "Metro Interchange" },
+          { "id": "aiims", "name": "AIIMS Ansari Nagar", "lat": 28.5672, "lng": 77.2100, "is_metro": true, "base_weight": 8, "context_tag": "National Medical Hub" },
+          { "id": "rajiv_chowk", "name": "Rajiv Chowk / CP", "lat": 28.6328, "lng": 77.2195, "is_metro": true, "base_weight": 8, "context_tag": "CBD Metro Interchange" }
         ]
       }
     ]
