@@ -1,3 +1,63 @@
+// ─── Backend API Response Types ───
+// These match the shapes returned by the Express backend at localhost:5000
+
+export interface ApiStop {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  is_metro: boolean;
+}
+
+export interface ApiScoredStop {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  load_pct: number;
+  is_metro: boolean;
+}
+
+export interface ApiScoredRoute {
+  id: string;
+  name: string;
+  tag: 'FASTEST' | 'MOST COMFORTABLE' | 'OPTIMAL' | 'ALTERNATE';
+  bus_numbers: string[];
+  eta_minutes: number;
+  transfers: number;
+  headway_mins: number;
+  overall_occupancy_pct: number;
+  status: 'GREEN' | 'YELLOW' | 'RED';
+  comfort_score: number;
+  stops: ApiScoredStop[];
+}
+
+export interface ApiPlanResponse {
+  query: {
+    origin: string;
+    destination: string;
+    time: string;
+  };
+  routes: ApiScoredRoute[];
+}
+
+export interface ApiCrowdReportResponse {
+  success: boolean;
+  message: string;
+  active_reports_count: number;
+}
+
+// ─── UI-Level Types ───
+
+export interface DemoScenario {
+  label: string;
+  origin: string;
+  destination: string;
+  time: string;
+}
+
+// ─── Legacy / Component-Level Types for backward compatibility ───
+
 export type OccupancyBadge = 'low' | 'moderate' | 'packed';
 
 export interface TransitStop {
@@ -9,6 +69,9 @@ export interface TransitStop {
   interchangeLines?: string[];
   zoneType: 'commercial' | 'transit_hub' | 'residential' | 'institutional';
   equipmentCount?: number;
+  lat?: number;
+  lng?: number;
+  is_metro?: boolean;
 }
 
 export interface RouteStopDetail {
@@ -34,7 +97,7 @@ export interface TransitRoute {
   co2SavingsKg: number;
   walkingDistanceM: number;
   frequencyMinutes: number;
-  
+
   averageOccupancyPct: number;
   peakOccupancyPct: number;
   occupancyBadge: OccupancyBadge;

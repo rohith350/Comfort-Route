@@ -1,15 +1,9 @@
 import {
   ChevronLeft,
-  Database,
-  FileText,
-  GitBranch,
-  House,
   MoonStar,
-  Radio,
+  Navigation,
   SunDim,
-  TrendingUp,
-  UsersRound,
-  Zap,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -25,11 +19,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import { SidebarToggleIcon } from "../../assets/icons";
@@ -41,42 +30,17 @@ import {
 } from "./sidebar-navigation-item";
 
 export const primaryNavigation: NavigationItem[] = [
-  { href: "/", label: "Dashboard", shortLabel: "Dashboard", icon: House },
   {
-    href: "/modelling",
-    label: "System modelling and data",
-    shortLabel: "Modelling",
-    icon: Database,
+    href: "/",
+    label: "Journey Planner",
+    shortLabel: "Planner",
+    icon: Navigation,
   },
   {
-    href: "/flexibility",
-    label: "Flexibility",
-    shortLabel: "Flexibility",
-    icon: Zap,
-  },
-  {
-    href: "/planning",
-    label: "Planning and investment",
-    shortLabel: "Planning",
-    icon: TrendingUp,
-  },
-  {
-    href: "/operations",
-    label: "Operations interface",
-    shortLabel: "Operations",
-    icon: Radio,
-  },
-  {
-    href: "/stakeholders",
-    label: "Stakeholders and public",
-    shortLabel: "Stakeholders",
-    icon: UsersRound,
-  },
-  {
-    href: "/connections",
-    label: "Connections and queue",
-    shortLabel: "Connections",
-    icon: GitBranch,
+    href: "/crowd-reports",
+    label: "Crowd Reports",
+    shortLabel: "Reports",
+    icon: Users,
   },
 ];
 
@@ -104,19 +68,6 @@ export function AppSidebar() {
       </div>
 
       <div className="flex flex-col items-center gap-4">
-        <Tooltip>
-          <TooltipTrigger
-            type="button"
-            aria-label="Documents"
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "icon-lg" }),
-              "rounded-lg text-muted-foreground",
-            )}
-          >
-            <FileText aria-hidden="true" className="size-6" strokeWidth={1.6} />
-          </TooltipTrigger>
-          <TooltipContent side="right">Documents</TooltipContent>
-        </Tooltip>
         <ProfileMenu placement="sidebar" />
       </div>
     </aside>
@@ -157,7 +108,7 @@ export function MobileNavigation({ isDark, onThemeChange }: ThemeProps) {
             <ChevronLeft aria-hidden="true" className="size-6" />
           </SheetClose>
           <SheetDescription className="sr-only">
-            Navigate between dashboard pages
+            Navigate between Delhi Transit views
           </SheetDescription>
         </SheetHeader>
 
