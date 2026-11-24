@@ -26,8 +26,18 @@ import {
   Loader2,
 } from 'lucide-react';
 
-import { fetchStops, fetchPlan, reportCrowd, resetCrowdReports, STOP_CONTEXT_MAP, getTemporalRushFactor } from '@/lib/api';
-import type { ApiStop, ApiPlanResponse, DemoScenario } from '@/lib/types';
+import {
+  fetchStops,
+  fetchPlan,
+  reportCrowd,
+  resetCrowdReports,
+  STOP_CONTEXT_MAP,
+  getTemporalRushFactor,
+  searchGtfsRoutes,
+  fetchLiveVehiclePositions,
+  fetchRouteByBusId,
+} from '@/lib/api';
+import type { ApiStop, ApiPlanResponse, ApiScoredRoute, DemoScenario, LiveVehiclePosition, LiveFeedStatus } from '@/lib/types';
 import { CrowdTelemetryHud, DayOfWeek } from '@/components/CrowdTelemetryHud';
 
 // Dynamic Leaflet map (no SSR)
@@ -152,6 +162,16 @@ export default function CrowdPlannerApp() {
   const [customReportStop, setCustomReportStop] = useState<string | null>(null);
   const [analyticsHoverHour, setAnalyticsHoverHour] = useState<number | null>(null);
 
+  // Search Mode: 'stops' (From/To) vs 'bus_number' (Instant GTFS Autocomplete)
+  const [searchMode, setSearchMode] = useState<'stops' | 'bus_number'>('stops');
+  const [busSearchQuery, setBusSearchQuery] = useState('');
+  const [busSearchResults, setBusSearchResults] = useState<any[]>([]);
+  const [isSearchingBus, setIsSearchingBus] = useState(false);
+
+  // Live Delhi GTFS-Realtime Telemetry State
+  const [liveFeedStatus, setLiveFeedStatus] = useState<LiveFeedStatus | undefined>(undefined);
+  const [liveBuses, setLiveBuses] = useState<LiveVehiclePosition[]>([]);
+
   const isDrawerOpen = activeTab !== null;
   const timeStr = useMemo(() => timeFromSlider(timeSlider), [timeSlider]);
 
@@ -170,6 +190,44 @@ export default function CrowdPlannerApp() {
   useEffect(() => {
     fetchStops().then(setStops);
   }, []);
+
+  // Bus Autocomplete Search Effect across real GTFS routes
+  useEffect(() => {
+    if (searchMode !== 'bus_number') return;
+    let active = true;
+    setIsSearchingBus(true);
+    const delayTimer = setTimeout(() => {
+      searchGtfsRoutes(busSearchQuery).then((results) => {
+        if (active) {
+          setBusSearchResults(results);
+          setIsSearchingBus(false);
+        }
+      });
+    }, 120);
+
+    return () => {
+      active = false;
+      clearTimeout(delayTimer);
+    };
+  }, [busSearchQuery, searchMode]);
+
+  // Live Delhi GTFS-Realtime Telemetry Polling (every 10 seconds)
+  useEffect(() => {
+    const routeId = selectedRoute?.bus_numbers[0] || '729';
+    fetchLiveVehiclePositions(routeId).then((res) => {
+      if (res.feedStatus) setLiveFeedStatus(res.feedStatus);
+      if (res.positions) setLiveBuses(res.positions);
+    });
+
+    const interval = setInterval(() => {
+      fetchLiveVehiclePositions(routeId).then((res) => {
+        if (res.feedStatus) setLiveFeedStatus(res.feedStatus);
+        if (res.positions) setLiveBuses(res.positions);
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [selectedRoute?.id]);
 
   // Fetch plan asynchronously whenever query params or day change
   useEffect(() => {
@@ -236,6 +294,58 @@ export default function CrowdPlannerApp() {
     const timeFormatted = `${hour.toString().padStart(2, '0')}:00`;
     setTimeSlider(sliderFromTime(timeFormatted));
     showToast(`Jumped departure time to ${displayTime(timeFormatted)}`);
+  };
+
+  // Select route from Bus Autocomplete
+  const handleSelectBusFromSearch = async (routeItem: any) => {
+    setLoading(true);
+    showToast(`Loading Delhi GTFS Route ${routeItem.route_short_name}…`);
+    try {
+      const details = await fetchRouteByBusId(routeItem.route_id, timeSlider / 4);
+      if (details && details.route) {
+        const busRoute: ApiScoredRoute = {
+          id: details.route.route_id,
+          name: `Bus ${details.route.route_short_name} (${details.route.route_long_name})`,
+          tag: details.route.avg_crowd_pct > 80 ? 'FASTEST' : 'MOST COMFORTABLE',
+          bus_numbers: [details.route.route_short_name],
+          eta_minutes: Math.max(28, details.stops.length * 3),
+          transfers: 0,
+          headway_mins: details.route.headway_mins || 10,
+          headway_text: `Every ${details.route.headway_mins || 10} mins`,
+          bus_type: details.route.bus_type,
+          overall_occupancy_pct: details.route.avg_crowd_pct,
+          status: details.route.avg_crowd_pct > 80 ? 'RED' : details.route.avg_crowd_pct >= 50 ? 'YELLOW' : 'GREEN',
+          comfort_score: Math.max(10, Math.round(100 - details.route.avg_crowd_pct)),
+          comfort_headline: `${Math.round(100 - details.route.avg_crowd_pct)}% Seats Open`,
+          category: details.route.avg_crowd_pct > 80 ? 'fastest' : 'comfortable',
+          stops: details.stops.map((s: any) => ({
+            id: s.stop_id,
+            name: s.stop_name,
+            lat: s.stop_lat,
+            lng: s.stop_lon,
+            load_pct: s.load_pct,
+            seat_prob: s.seat_prob,
+            seat_tag: s.seat_tag,
+            turnover_note: s.turnover_note,
+            is_metro: s.is_metro,
+            context_tag: s.is_metro ? 'Metro Interchange' : 'Bus Stop',
+          })),
+        };
+
+        if (planData) {
+          const updatedRoutes = [busRoute, ...planData.routes.filter((r) => r.id !== busRoute.id)];
+          setPlanData({ ...planData, routes: updatedRoutes });
+        }
+        setSelectedRouteId(busRoute.id);
+        setActiveTab('details');
+        showToast(`Route ${routeItem.route_short_name} plotted with ${details.stops.length} real GTFS stops ✓`);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast(`Failed to load route ${routeItem.route_short_name}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Explicit Search CTA action with simulated shimmer pulse
@@ -387,6 +497,13 @@ export default function CrowdPlannerApp() {
           selectedRouteId={selectedRouteId}
           onSelectRoute={setSelectedRouteId}
           isDrawerOpen={isDrawerOpen}
+          liveBuses={liveBuses}
+          selectedStopId={selectedReportStop}
+          onSelectStop={(stopId) => {
+            setCustomReportStop(stopId);
+            setActiveTab('details');
+            showToast(`Inspecting stop telemetry on route`);
+          }}
         />
       </div>
 
@@ -526,8 +643,106 @@ export default function CrowdPlannerApp() {
           {/* TAB 1: PLAN JOURNEY */}
           {activeTab === 'journey' && (
             <div className="space-y-2 animate-in fade-in slide-in-from-left-3 duration-300">
-              {/* Origin & Destination */}
-              <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-cyan-400/15 space-y-1 shadow-inner">
+              {/* Mode Toggle: By Stops vs By Bus Number */}
+              <div className="grid grid-cols-2 gap-1 p-1 bg-zinc-950/80 rounded-xl border border-cyan-400/20 shadow-inner">
+                <button
+                  onClick={() => setSearchMode('stops')}
+                  className={`py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    searchMode === 'stops'
+                      ? 'bg-gradient-to-r from-cyan-500/30 to-emerald-400/30 border border-cyan-400/60 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.3)]'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  <Navigation className="w-3 h-3" />
+                  <span>By Stops</span>
+                </button>
+                <button
+                  onClick={() => setSearchMode('bus_number')}
+                  className={`py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    searchMode === 'bus_number'
+                      ? 'bg-gradient-to-r from-cyan-500/30 to-emerald-400/30 border border-cyan-400/60 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.3)]'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  <Bus className="w-3 h-3" />
+                  <span>By Bus Number</span>
+                </button>
+              </div>
+
+              {/* MODE 2: INSTANT BUS NUMBER AUTOCOMPLETE SEARCH */}
+              {searchMode === 'bus_number' && (
+                <div className="space-y-2 animate-in fade-in duration-200">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-cyan-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={busSearchQuery}
+                      onChange={(e) => setBusSearchQuery(e.target.value)}
+                      placeholder="Search Bus No. (e.g., 729, 534, GL-23)"
+                      className="w-full h-8 pl-8 pr-7 text-xs bg-zinc-950/90 border border-cyan-400/30 rounded-lg text-white focus:outline-none focus:border-cyan-400 shadow-inner placeholder:text-neutral-500 font-medium"
+                      autoFocus
+                    />
+                    {isSearchingBus && (
+                      <Loader2 className="absolute right-2.5 top-2.5 w-3.5 h-3.5 text-cyan-400 animate-spin" />
+                    )}
+                  </div>
+
+                  <div className="text-[9.5px] text-neutral-400 font-semibold uppercase tracking-wider flex items-center justify-between">
+                    <span>Delhi GTFS Bus Routes</span>
+                    <span className="text-[9px] text-cyan-400/80 font-normal">
+                      {busSearchResults.length} found
+                    </span>
+                  </div>
+
+                  {/* Autocomplete Results List */}
+                  <div className="space-y-1.5 max-h-[380px] overflow-y-auto scrollbar-none fade-mask-bottom">
+                    {busSearchResults.map((routeItem) => (
+                      <div
+                        key={routeItem.route_id}
+                        onClick={() => handleSelectBusFromSearch(routeItem)}
+                        className="p-2.5 rounded-xl bg-zinc-900/70 border border-white/5 hover:border-cyan-400/50 hover:bg-zinc-900/90 transition-all cursor-pointer active:scale-[0.99] group shadow-sm"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-mono font-bold text-white px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/50 shadow-[0_0_8px_rgba(34,211,238,0.3)]">
+                              Bus {routeItem.route_short_name}
+                            </span>
+                            <span className="text-[8.5px] font-mono px-1.5 py-0.2 rounded bg-white/5 border border-white/10 text-neutral-300">
+                              {routeItem.bus_type}
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.2 rounded">
+                            🪑 {routeItem.seat_prob_pct}% Seat
+                          </span>
+                        </div>
+
+                        <div className="text-[11px] text-neutral-300 font-medium line-clamp-1 group-hover:text-cyan-200 transition-colors">
+                          {routeItem.route_long_name}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] text-neutral-400 mt-1.5 font-mono">
+                          <span>Every ~{routeItem.headway_mins}m</span>
+                          <span className={routeItem.avg_crowd_pct > 80 ? 'text-rose-400' : 'text-amber-400'}>
+                            Avg Crowd: {routeItem.avg_crowd_pct}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {busSearchQuery && busSearchResults.length === 0 && !isSearchingBus && (
+                      <div className="text-center py-6 text-xs text-neutral-400">
+                        No matching Delhi GTFS routes for &quot;{busSearchQuery}&quot;
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* MODE 1: SEARCH BY STOPS */}
+              {searchMode === 'stops' && (
+                <>
+                  {/* Origin & Destination */}
+                  <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-cyan-400/15 space-y-1 shadow-inner">
                 <div>
                   <label className="text-[9.5px] text-neutral-400 mb-0.5 block font-semibold uppercase tracking-wider">
                     From Origin
@@ -774,6 +989,8 @@ export default function CrowdPlannerApp() {
                   );
                 })}
               </div>
+                </>
+              )}
             </div>
           )}
 
@@ -853,9 +1070,22 @@ export default function CrowdPlannerApp() {
                   {selectedRoute.stops.map((stop, idx) => {
                     const isLast = idx === selectedRoute.stops.length - 1;
                     const context = stop.context_tag || STOP_CONTEXT_MAP[stop.id];
+                    const isSelected = selectedReportStop === stop.id;
+                    const seatProb = stop.seat_prob ?? Math.max(8, Math.min(98, 100 - stop.load_pct));
 
                     return (
-                      <div key={stop.id} className="flex items-start gap-2">
+                      <div
+                        key={stop.id}
+                        onClick={() => {
+                          setCustomReportStop(stop.id);
+                          showToast(`Selected ${stop.name} for live telemetry`);
+                        }}
+                        className={`flex items-start gap-2 p-1.5 rounded-lg transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-cyan-950/60 border border-cyan-400/50 shadow-[0_0_12px_rgba(34,211,238,0.25)]'
+                            : 'hover:bg-zinc-800/40 border border-transparent'
+                        }`}
+                      >
                         <div className="flex flex-col items-center w-3.5 shrink-0 mt-1">
                           <div
                             className={`w-2 h-2 rounded-full border border-black shrink-0 transition-colors duration-300 ${
@@ -865,29 +1095,53 @@ export default function CrowdPlannerApp() {
                           {!isLast && <div className="w-px flex-1 min-h-[16px] bg-white/10" />}
                         </div>
 
-                        <div className="flex-1 pb-1">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-white font-medium flex items-center gap-1 truncate max-w-[170px]">
+                        <div className="flex-1 pb-0.5 min-w-0">
+                          <div className="flex items-center justify-between text-[11px] gap-1">
+                            <span className="text-white font-medium flex items-center gap-1 truncate max-w-[140px]">
                               <span className="truncate">{stop.name}</span>
                               {stop.is_metro && <Train className="h-2.5 w-2.5 text-indigo-400 shrink-0" />}
                             </span>
-                            <span
-                              className={`font-bold font-mono text-[11px] tabular-nums transition-colors duration-300 ${
-                                stop.load_pct >= 80
-                                ? 'text-rose-400'
-                                : stop.load_pct >= 50
-                                ? 'text-amber-400'
-                                : 'text-emerald-400'
-                              }`}
-                            >
-                              {stop.load_pct}%
-                            </span>
+
+                            {/* Side-by-Side: Seat Probability Pill + Crowd % */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span
+                                className={`text-[8.5px] font-mono font-bold px-1.5 py-0.2 rounded border ${
+                                  seatProb >= 60
+                                    ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300'
+                                    : seatProb >= 30
+                                    ? 'bg-amber-950/80 border-amber-500/50 text-amber-300'
+                                    : 'bg-rose-950/80 border-rose-500/50 text-rose-300'
+                                }`}
+                              >
+                                🪑 {seatProb}% Seat
+                              </span>
+
+                              <span
+                                className={`font-bold font-mono text-[11px] tabular-nums transition-colors duration-300 ${
+                                  stop.load_pct >= 80
+                                    ? 'text-rose-400'
+                                    : stop.load_pct >= 50
+                                    ? 'text-amber-400'
+                                    : 'text-emerald-400'
+                                }`}
+                              >
+                                {stop.load_pct}%
+                              </span>
+                            </div>
                           </div>
 
                           {context && (
                             <div className="text-[9px] text-neutral-400 font-normal mt-0.5 flex items-center gap-1">
                               <span className="px-1.5 py-0.2 rounded bg-zinc-950 border border-white/5 text-neutral-300">
                                 {context}
+                              </span>
+                            </div>
+                          )}
+
+                          {stop.turnover_note && (
+                            <div className="text-[9px] text-cyan-300 font-semibold mt-0.5 flex items-center gap-1 w-fit">
+                              <span className="px-1.5 py-0.2 rounded bg-cyan-950/80 border border-cyan-400/30 text-cyan-200">
+                                {stop.turnover_note}
                               </span>
                             </div>
                           )}

@@ -1,0 +1,43 @@
+stop_id,stop_code,stop_name,stop_lat,stop_lon,zone_id
+uttam_nagar_terminal,UN01,Uttam Nagar Terminal,28.6219,77.0583,DELHI_WEST
+janakpuri_east_metro,JE02,Janakpuri East Metro Station,28.6289,77.0787,DELHI_WEST
+tilak_nagar_crossing,TN03,Tilak Nagar Crossing,28.6366,77.0963,DELHI_WEST
+subhash_nagar_crossing,SN04,Subhash Nagar Crossing,28.6402,77.1051,DELHI_WEST
+tagore_garden_metro,TG05,Tagore Garden Metro Station,28.6438,77.1130,DELHI_WEST
+rajouri_garden_crossing,RG06,Rajouri Garden Metro Interchange,28.6492,77.1225,DELHI_WEST
+raja_garden,RA07,Raja Garden Crossing,28.6534,77.1298,DELHI_WEST
+mayapuri_crossing,MY08,Mayapuri Crossing,28.6245,77.1310,DELHI_WEST
+moti_nagar_industrial,MN09,Moti Nagar Industrial Precinct,28.6578,77.1424,DELHI_WEST
+karampura_terminal,KP10,Karampura Terminal,28.6552,77.1490,DELHI_WEST
+shadipur_depot,SH11,Shadipur Depot,28.6517,77.1582,DELHI_WEST
+patel_nagar_west,PW12,West Patel Nagar,28.6536,77.1645,DELHI_WEST
+patel_nagar_east,PE13,East Patel Nagar,28.6510,77.1730,DELHI_WEST
+rajendra_place,RP14,Rajendra Place Metro,28.6425,77.1812,DELHI_CENTRAL
+karol_bagh_metro,KB15,Karol Bagh Metro Station,28.6441,77.1906,DELHI_CENTRAL
+jhandewalan_crossing,JH16,Jhandewalan Crossing,28.6444,77.2005,DELHI_CENTRAL
+ramakrishna_ashram_marg,RK17,RK Ashram Marg Metro,28.6390,77.2085,DELHI_CENTRAL
+dhaula_kuan_interchange,DK18,Dhaula Kuan Interchange,28.5921,77.1616,DELHI_SOUTHWEST
+chanakyapuri_embassy,CK19,Chanakyapuri Post Office,28.5983,77.1856,DELHI_SOUTHWEST
+shivaji_stadium_terminal,SS20,Shivaji Stadium Bus Terminal,28.6288,77.2132,DELHI_CENTRAL
+connaught_place_inner_circle,CP21,Connaught Place (Inner Circle),28.6315,77.2167,DELHI_CENTRAL
+rajiv_chowk_metro,RC22,Rajiv Chowk Metro Interchange,28.6328,77.2195,DELHI_CENTRAL
+mori_gate_terminal,MG23,Mori Gate Terminal,28.6640,77.2190,DELHI_NORTH
+kashmere_gate_isbt,KG24,Kashmere Gate ISBT,28.6675,77.2285,DELHI_NORTH
+delhi_gate,DG25,Delhi Gate,28.6415,77.2405,DELHI_CENTRAL
+ito_crossing,IT26,ITO Crossing,28.6285,77.2410,DELHI_EAST
+pragati_maidan,PM27,Pragati Maidan,28.6185,77.2440,DELHI_CENTRAL
+sarai_kale_khan_isbt,SK28,Sarai Kale Khan ISBT,28.5900,77.2550,DELHI_SOUTHEAST
+lajpat_nagar_metro,LN29,Lajpat Nagar Metro Station,28.5700,77.2370,DELHI_SOUTH
+moolchand_hospital,MC30,Moolchand Hospital,28.5650,77.2340,DELHI_SOUTH
+nehru_place_terminal,NP31,Nehru Place Bus Terminal,28.5494,77.2529,DELHI_SOUTH
+anand_vihar_isbt,AV32,Anand Vihar ISBT,28.6469,77.3160,DELHI_EAST
+mehrauli_terminal,MH33,Mehrauli Terminal,28.5190,77.1830,DELHI_SOUTH
+saket_metro,SK34,Saket Metro Station,28.5204,77.2015,DELHI_SOUTH
+hauz_khas_metro,HK35,Hauz Khas Metro Interchange,28.5494,77.2001,DELHI_SOUTH
+aiims_metro,AI36,AIIMS Metro Station,28.5672,77.2100,DELHI_SOUTH
+old_delhi_railway_station,OD37,Old Delhi Railway Station,28.6580,77.2300,DELHI_NORTH
+new_delhi_railway_station,ND38,New Delhi Railway Station,28.6430,77.2220,DELHI_CENTRAL
+ambedkar_nagar_terminal,AN39,Ambedkar Nagar Terminal,28.5240,77.2320,DELHI_SOUTH
+najafgarh_terminal,NG40,Najafgarh Terminal,28.6120,76.9850,DELHI_RURAL
+dwarka_sec_22,DW41,Dwarka Sector 22 Terminal,28.5710,77.0540,DELHI_SOUTHWEST
+badarpur_border,BB42,Badarpur Border Terminal,28.4980,77.3050,DELHI_SOUTH

@@ -1,4 +1,5 @@
-import type { ApiStop, ApiPlanResponse, ApiCrowdReportResponse, ApiScoredStop } from './types';
+import type { ApiStop, ApiPlanResponse, ApiCrowdReportResponse, ApiScoredStop, LiveVehiclePosition, LiveFeedStatus } from './types';
+import { calculateRealStopMetrics } from './realCrowdModel';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -165,7 +166,7 @@ export function calculateDynamicPlan(
     (origin === 'uttam_nagar' && destination === 'connaught_place') ||
     (origin === 'connaught_place' && destination === 'uttam_nagar')
   ) {
-    const stopsFast: ApiScoredStop[] = [
+    const rawStopsFast: ApiScoredStop[] = [
       { id: 'uttam_nagar', name: 'Uttam Nagar', lat: 28.6219, lng: 77.0583, load_pct: Math.min(95, Math.round(fastOcc * 0.75)), is_metro: true, context_tag: 'Residential Hub' },
       { id: 'janakpuri_east', name: 'Janakpuri East', lat: 28.6289, lng: 77.0787, load_pct: Math.min(98, Math.round(fastOcc * 0.88)), is_metro: true, context_tag: 'Metro Interchange' },
       { id: 'tilak_nagar', name: 'Tilak Nagar', lat: 28.6366, lng: 77.0963, load_pct: Math.min(98, Math.round(fastOcc * 0.92)), is_metro: true, context_tag: 'Commercial Area' },
@@ -179,7 +180,7 @@ export function calculateDynamicPlan(
       { id: 'connaught_place', name: 'Connaught Place', lat: 28.6315, lng: 77.2167, load_pct: Math.min(92, Math.round(fastOcc * 0.85)), is_metro: true, context_tag: 'Office Hub' },
     ];
 
-    const stopsComfort: ApiScoredStop[] = [
+    const rawStopsComfort: ApiScoredStop[] = [
       { id: 'uttam_nagar', name: 'Uttam Nagar', lat: 28.6219, lng: 77.0583, load_pct: Math.round(comfortOcc * 0.8), is_metro: true, context_tag: 'Residential Hub' },
       { id: 'mayapuri_crossing', name: 'Mayapuri Crossing', lat: 28.6245, lng: 77.1310, load_pct: Math.round(comfortOcc * 0.9), is_metro: true, context_tag: 'Arterial Bypass' },
       { id: 'dhaula_kuan', name: 'Dhaula Kuan Interchange', lat: 28.5921, lng: 77.1616, load_pct: Math.round(comfortOcc * 1.05), is_metro: true, context_tag: 'Airport Express Interchange' },
@@ -188,9 +189,53 @@ export function calculateDynamicPlan(
       { id: 'connaught_place', name: 'Connaught Place', lat: 28.6315, lng: 77.2167, load_pct: Math.round(comfortOcc * 0.8), is_metro: true, context_tag: 'Office Hub' },
     ];
 
+    // Compute real stop metrics using the mathematical crowd model
+    const fastMetrics = calculateRealStopMetrics(
+      rawStopsFast.map((s) => s.id),
+      hours,
+      14,
+      14,
+      isSurgeDemo ? 1.4 : 1.15,
+      42
+    );
+
+    const stopsFast: ApiScoredStop[] = rawStopsFast.map((s, idx) => {
+      const m = fastMetrics[idx];
+      return {
+        ...s,
+        load_pct: m ? m.loadPct : s.load_pct,
+        seat_prob: m ? m.seatProb : Math.max(10, 100 - s.load_pct),
+        seat_tag: m ? m.seatTag : 'Moderate Seats',
+        turnover_note: m?.turnoverNote,
+      };
+    });
+
+    const comfortMetrics = calculateRealStopMetrics(
+      rawStopsComfort.map((s) => s.id),
+      hours,
+      8,
+      8,
+      1.05,
+      36
+    );
+
+    const stopsComfort: ApiScoredStop[] = rawStopsComfort.map((s, idx) => {
+      const m = comfortMetrics[idx];
+      return {
+        ...s,
+        load_pct: m ? m.loadPct : s.load_pct,
+        seat_prob: m ? m.seatProb : 82,
+        seat_tag: m ? m.seatTag : 'High Seat Chance',
+        turnover_note: m?.turnoverNote,
+      };
+    });
+
     const stopsWait: ApiScoredStop[] = stopsFast.map((s) => ({
       ...s,
       load_pct: Math.max(15, Math.round(s.load_pct * 0.42)),
+      seat_prob: Math.min(98, Math.max(78, Math.round(100 - s.load_pct * 0.4))),
+      seat_tag: 'Guaranteed Seat',
+      turnover_note: s.turnover_note,
     }));
 
     return {
@@ -679,3 +724,73 @@ export async function resetCrowdReports(): Promise<boolean> {
     return true;
   }
 }
+
+/**
+ * Autocomplete search across real Delhi GTFS routes (routes.txt)
+ */
+export async function searchGtfsRoutes(query: string) {
+  try {
+    const res = await fetch(`/api/transit/search?q=${encodeURIComponent(query)}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.routes || [];
+    }
+  } catch {
+    // Offline fallback
+  }
+  return [];
+}
+
+/**
+ * Fetch live GPS vehicle positions from Delhi OTD feed or scheduled timetable
+ */
+export async function fetchLiveVehiclePositions(routeId: string): Promise<{
+  positions: LiveVehiclePosition[];
+  feedStatus: LiveFeedStatus;
+}> {
+  try {
+    const res = await fetch(`/api/transit/live?route_id=${encodeURIComponent(routeId)}`);
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        positions: data.positions || [],
+        feedStatus: data.feedStatus || {
+          source: 'GTFS SCHEDULE + LIVE TRAFFIC',
+          isLiveRealtime: false,
+          activeBusesCount: 0,
+          lastUpdated: Date.now(),
+          note: 'Live traffic sync',
+        },
+      };
+    }
+  } catch {
+    // Fallback
+  }
+
+  return {
+    positions: [],
+    feedStatus: {
+      source: 'GTFS SCHEDULE + LIVE TRAFFIC',
+      isLiveRealtime: false,
+      activeBusesCount: 0,
+      lastUpdated: Date.now(),
+      note: 'Live schedule and traffic telemetry',
+    },
+  };
+}
+
+/**
+ * Fetch full real GTFS route with all stops and mathematical crowd/seat chance
+ */
+export async function fetchRouteByBusId(busId: string, hour: number = 9.25) {
+  try {
+    const res = await fetch(`/api/transit/route?id=${encodeURIComponent(busId)}&hour=${hour}`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch {
+    // Fallback
+  }
+  return null;
+}
+

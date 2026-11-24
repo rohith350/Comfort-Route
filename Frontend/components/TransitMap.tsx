@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { ApiScoredRoute, ApiScoredStop } from '@/lib/types';
+import type { ApiScoredRoute, ApiScoredStop, LiveVehiclePosition } from '@/lib/types';
 import { fetchAllRouteSegments, type RouteRoadSegment } from '@/lib/osrmService';
 
 interface TransitMapProps {
@@ -15,6 +15,9 @@ interface TransitMapProps {
   onSelectRoute: (routeId: string) => void;
   /** Whether the left command drawer is expanded */
   isDrawerOpen?: boolean;
+  liveBuses?: LiveVehiclePosition[];
+  selectedStopId?: string | null;
+  onSelectStop?: (stopId: string) => void;
 }
 
 /** High-vibrancy neon colors */
@@ -29,6 +32,9 @@ export default function TransitMap({
   selectedRouteId,
   onSelectRoute,
   isDrawerOpen = true,
+  liveBuses = [],
+  selectedStopId,
+  onSelectStop,
 }: TransitMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -283,14 +289,21 @@ export default function TransitMap({
           `;
         }
 
+        const isSelectedStop = selectedStopId === stop.id;
         const icon = L.divIcon({
           className: 'transit-stop-marker',
-          html: markerHtml,
+          html: markerHtml + (isSelectedStop ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid #22d3ee;animation:ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>` : ''),
           iconSize: [36, 36],
           iconAnchor: [18, 18],
         });
 
         const marker = L.marker([stop.lat, stop.lng], { icon });
+
+        marker.on('click', () => {
+          if (onSelectStop) {
+            onSelectStop(stop.id);
+          }
+        });
 
         const badgeLabel = isOrigin ? 'ORIGIN' : isDestination ? 'DESTINATION' : isMetro ? 'METRO INTERCHANGE' : '';
         const badgeHtml = badgeLabel
@@ -301,8 +314,12 @@ export default function TransitMap({
           ? `<span style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;padding:1px 6px;border-radius:4px;font-size:10px;">${stop.context_tag}</span>`
           : '';
 
+        const seatBadge = stop.seat_prob !== undefined
+          ? `<span style="background:${stop.seat_prob >= 60 ? '#10b98125' : stop.seat_prob >= 30 ? '#f59e0b25' : '#ef444425'};border:1px solid ${stop.seat_prob >= 60 ? '#10b98160' : stop.seat_prob >= 30 ? '#f59e0b60' : '#ef444460'};color:${stop.seat_prob >= 60 ? '#34d399' : stop.seat_prob >= 30 ? '#fbbf24' : '#f87171'};padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:600;">🪑 ${stop.seat_prob}% Seats</span>`
+          : '';
+
         marker.bindTooltip(
-          `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;padding:3px 6px;min-width:140px;">
+          `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;padding:3px 6px;min-width:150px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
               <strong style="color:#ffffff;">${stop.name}</strong>
               ${badgeHtml}
@@ -311,8 +328,10 @@ export default function TransitMap({
               <span style="color:${dotColor};font-weight:700;font-size:11px;">
                 ${stop.load_pct}% Load
               </span>
-              ${contextBadge}
+              ${seatBadge}
             </div>
+            ${contextBadge ? `<div style="margin-top:3px;">${contextBadge}</div>` : ''}
+            ${stop.turnover_note ? `<div style="margin-top:3px;color:#38bdf8;font-size:10px;font-weight:600;">${stop.turnover_note}</div>` : ''}
           </div>`,
           {
             permanent: false,
@@ -326,8 +345,36 @@ export default function TransitMap({
       });
     }
 
-    // 4. Subtle Animated "Live Bus Position" Marker Gliding Along Route
-    if (activePathPoints.length >= 2) {
+    // 4. Real GPS Buses (from GTFS-Realtime) or Animated Live Bus Marker Gliding Along Route
+    if (liveBuses && liveBuses.length > 0) {
+      liveBuses.forEach((bus) => {
+        const busIcon = L.divIcon({
+          className: 'live-bus-marker',
+          html: `
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:#06b6d435;border:1px solid #06b6d488;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
+              <div style="width:22px;height:22px;background:#08131d;border:2px solid #22d3ee;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px #06b6d4, 0 0 4px #22d3ee;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="15" rx="2"/><path d="M4 11h16"/><circle cx="7" cy="15" r="1.5"/><circle cx="17" cy="15" r="1.5"/>
+                </svg>
+              </div>
+            </div>
+          `,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+
+        const liveMarker = L.marker([bus.lat, bus.lng], { icon: busIcon, zIndexOffset: 2500 });
+        liveMarker.bindTooltip(
+          `<div style="font-size:11px;padding:3px 6px;font-weight:600;color:#22d3ee;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+            🚌 <strong>${bus.vehicleId}</strong> (Route ${bus.routeId})<br/>
+            <span style="color:#94a3b8;font-size:10px;">Live Speed: ${bus.speedKmH} km/h • Next Stop in ~${bus.etaNextStopMins}m</span>
+          </div>`,
+          { permanent: false, direction: 'top', className: 'transit-tooltip' }
+        );
+        layer.addLayer(liveMarker);
+      });
+    } else if (activePathPoints.length >= 2) {
       const dists: number[] = [0];
       for (let i = 0; i < activePathPoints.length - 1; i++) {
         const p1 = activePathPoints[i];

@@ -1,0 +1,21 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+729,DTC,729,Uttam Nagar Terminal to Mori Gate Terminal via Karol Bagh & CP,3,10B981,FFFFFF
+E-44,DTC,E-44,Dwarka Sector 22 to Shivaji Stadium Terminal (AC Electric),3,06B6D4,000000
+MF-1,DMRC,MF-1,Janakpuri West Metro to Dhaula Kuan Interchange (Metro Feeder),3,8B5CF6,FFFFFF
+534,DIMTS,534,Mehrauli Terminal to Anand Vihar ISBT via Ring Road & Lajpat Nagar,3,F59E0B,000000
+419,DTC,419,Ambedkar Nagar Terminal to Old Delhi Railway Station via Delhi Gate,3,EF4444,FFFFFF
+764,DIMTS,764,Najafgarh Terminal to Nehru Place Terminal via Dhaula Kuan & AIIMS,3,F97316,FFFFFF
+OMS,DTC,OMS,Outer Mudrika Service (Uttam Nagar - Ring Road Circular Trunk),3,14B8A6,FFFFFF
+GL-23,DIMTS,GL-23,ISBT Kashmere Gate to ISBT Sarai Kale Khan Express,3,6366F1,FFFFFF
+522,DTC,522,Badarpur Border to Krishi Bhawan / Central Secretariat,3,0EA5E9,FFFFFF
+740,DTC,740,Uttam Nagar Terminal to Anand Vihar ISBT via Connaught Place & ITO,3,EC4899,FFFFFF
+100,DTC,100,Adarsh Nagar to Kendriya Terminal via Kashmere Gate,3,84CC16,000000
+205,DIMTS,205,New Delhi Railway Station to Anand Vihar ISBT via Shakarpur,3,EAB308,000000
+502,DTC,502,Mehrauli Terminal to Old Delhi Railway Station via AIIMS & Red Fort,3,F43F5E,FFFFFF
+615,DTC,615,Purvanchal Hostel (JNU) to Minto Road Terminal via CP,3,06B6D4,000000
+894,DTC,894,Karampura Terminal to Okhla Extension via Ring Road & AIIMS,3,3B82F6,FFFFFF
+429,DIMTS,429,DDA Flats Kalkaji to Kashmere Gate ISBT via ITO,3,A855F7,FFFFFF
+505,DTC,505,Mehrauli Terminal to Shivaji Stadium Terminal via Safdarjung,3,10B981,FFFFFF
+901,DTC,901,Mangolpuri Q-Block to Kamla Market via Karol Bagh,3,D97706,FFFFFF
+970,DIMTS,970,Rohini Sector 1 to Jawaharlal Nehru Stadium via Dhaula Kuan,3,0284C7,FFFFFF
+RL-77,DTC,RL-77,Manglapuri Terminal to New Delhi Railway Station Gate 2,3,BE123C,FFFFFF

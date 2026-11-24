@@ -1,0 +1,4 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone
+DTC,Delhi Transport Corporation,https://dtc.delhi.gov.in,Asia/Kolkata,en,011-23317600
+DIMTS,Delhi Integrated Multi-Modal Transit System,https://dimts.in,Asia/Kolkata,en,011-43090100
+DMRC,Delhi Metro Rail Corporation Feeder,https://www.delhimetrorail.com,Asia/Kolkata,en,011-155370

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Clock, RotateCcw, Zap, Sparkles } from 'lucide-react';
+import { Clock, RotateCcw, Zap, Sparkles, Radio } from 'lucide-react';
+import type { LiveFeedStatus } from '@/lib/types';
 
 export const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 export type DayOfWeek = typeof DAYS_OF_WEEK[number];
@@ -74,6 +75,7 @@ interface CrowdTelemetryHudProps {
   onSelectHour: (hour: number) => void;
   isSurgeDemo?: boolean;
   onRefresh?: () => void;
+  liveStatus?: LiveFeedStatus;
 }
 
 export function CrowdTelemetryHud({
@@ -83,6 +85,7 @@ export function CrowdTelemetryHud({
   onSelectHour,
   isSurgeDemo = false,
   onRefresh,
+  liveStatus,
 }: CrowdTelemetryHudProps) {
   // Live ticking digital clock
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
@@ -167,6 +170,25 @@ export function CrowdTelemetryHud({
 
   return (
     <div className="fixed top-4 right-4 w-[310px] z-20 rounded-2xl border border-cyan-400/20 bg-[#0b1120]/85 backdrop-blur-2xl p-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex flex-col gap-2.5 transition-all duration-300">
+      {/* ━━━ OTD CONNECTION STATUS BADGE ━━━ */}
+      <div className="flex items-center justify-between pb-1 border-b border-cyan-400/15">
+        <span className="text-[9px] text-neutral-400 font-mono tracking-wider">DELHI OTD</span>
+        <span
+          className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8.5px] font-mono font-bold tracking-wider ${
+            liveStatus?.isLiveRealtime
+              ? 'bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.35)]'
+              : 'bg-amber-950/80 border border-amber-500/50 text-amber-300'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              liveStatus?.isLiveRealtime ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+            }`}
+          />
+          {liveStatus?.source || 'GTFS SCHEDULE + LIVE TRAFFIC'}
+        </span>
+      </div>
+
       {/* ━━━ ROW 1: LIVE CLOCK, DATE & DAY SELECTOR ━━━ */}
       <div className="space-y-2">
         {/* Clock & Date Header */}

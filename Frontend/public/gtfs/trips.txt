@@ -1,0 +1,32 @@
+route_id,service_id,trip_id,trip_headsign,direction_id,shape_id
+729,ALL_DAYS,trip_729_0900,Mori Gate Terminal,0,shape_729_up
+729,ALL_DAYS,trip_729_0906,Mori Gate Terminal,0,shape_729_up
+729,ALL_DAYS,trip_729_0915,Mori Gate Terminal,0,shape_729_up
+729,ALL_DAYS,trip_729_0927,Mori Gate Terminal,0,shape_729_up
+729,ALL_DAYS,trip_729_1000,Mori Gate Terminal,0,shape_729_up
+729,ALL_DAYS,trip_729_1200,Mori Gate Terminal,0,shape_729_up
+729,ALL_DAYS,trip_729_1400,Mori Gate Terminal,0,shape_729_up
+729,ALL_DAYS,trip_729_1830,Mori Gate Terminal,0,shape_729_up
+E-44,ALL_DAYS,trip_e44_0900,Shivaji Stadium Terminal,0,shape_e44_up
+E-44,ALL_DAYS,trip_e44_0915,Shivaji Stadium Terminal,0,shape_e44_up
+E-44,ALL_DAYS,trip_e44_0930,Shivaji Stadium Terminal,0,shape_e44_up
+MF-1,ALL_DAYS,trip_mf1_0910,Dhaula Kuan Interchange,0,shape_mf1_up
+MF-1,ALL_DAYS,trip_mf1_0920,Dhaula Kuan Interchange,0,shape_mf1_up
+534,ALL_DAYS,trip_534_0900,Anand Vihar ISBT,0,shape_534_up
+534,ALL_DAYS,trip_534_0915,Anand Vihar ISBT,0,shape_534_up
+419,ALL_DAYS,trip_419_0900,Old Delhi Railway Station,0,shape_419_up
+764,ALL_DAYS,trip_764_0900,Nehru Place Terminal,0,shape_764_up
+OMS,ALL_DAYS,trip_oms_0900,Outer Mudrika Circular,0,shape_oms_up
+GL-23,ALL_DAYS,trip_gl23_0900,ISBT Sarai Kale Khan,0,shape_gl23_up
+522,ALL_DAYS,trip_522_0900,Krishi Bhawan,0,shape_522_up
+740,ALL_DAYS,trip_740_0900,Anand Vihar ISBT,0,shape_740_up
+100,ALL_DAYS,trip_100_0900,Kendriya Terminal,0,shape_100_up
+205,ALL_DAYS,trip_205_0900,Anand Vihar ISBT,0,shape_205_up
+502,ALL_DAYS,trip_502_0900,Old Delhi Railway Station,0,shape_502_up
+615,ALL_DAYS,trip_615_0900,Minto Road Terminal,0,shape_615_up
+894,ALL_DAYS,trip_894_0900,Okhla Extension,0,shape_894_up
+429,ALL_DAYS,trip_429_0900,Kashmere Gate ISBT,0,shape_429_up
+505,ALL_DAYS,trip_505_0900,Shivaji Stadium Terminal,0,shape_505_up
+901,ALL_DAYS,trip_901_0900,Kamla Market,0,shape_901_up
+970,ALL_DAYS,trip_970_0900,Jawaharlal Nehru Stadium,0,shape_970_up
+RL-77,ALL_DAYS,trip_rl77_0900,New Delhi Railway Station Gate 2,0,shape_rl77_up

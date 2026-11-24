@@ -18,6 +18,28 @@ export interface ApiScoredStop {
   load_pct: number;
   is_metro: boolean;
   context_tag?: string; // e.g. "Metro Interchange", "Office Hub", "Market Hub"
+  seat_prob?: number; // 0 - 100%
+  seat_tag?: 'Guaranteed Seat' | 'High Seat Chance' | 'Moderate Seats' | 'Standing Likely' | 'Standing Only';
+  turnover_note?: string; // e.g. "↑ Seats free up at Rajouri Garden Metro Interchange"
+}
+
+export interface LiveVehiclePosition {
+  vehicleId: string;
+  routeId: string;
+  lat: number;
+  lng: number;
+  speedKmH: number;
+  bearing?: number;
+  timestamp: number;
+  etaNextStopMins: number;
+}
+
+export interface LiveFeedStatus {
+  source: 'LIVE OTD STREAM' | 'GTFS SCHEDULE + LIVE TRAFFIC';
+  isLiveRealtime: boolean;
+  activeBusesCount: number;
+  lastUpdated: number;
+  note: string;
 }
 
 export interface ApiScoredRoute {
@@ -34,12 +56,14 @@ export interface ApiScoredRoute {
   stops: ApiScoredStop[];
 
   // Enhanced Demo & Intelligence Metadata
-  bus_type?: 'DTC Non-AC' | 'Cluster AC Electric' | 'Delhi EV Feeder';
+  bus_type?: 'DTC Non-AC' | 'Cluster AC Electric' | 'Delhi EV Feeder' | 'DTC Standard' | 'DTC Low-Floor AC' | 'DIMTS Cluster' | 'DMRC Metro Feeder';
   headway_text?: string; // e.g. "Every 6 mins"
   highlight_pill?: string; // e.g. "Wait 12m to get a guaranteed seat"
   comfort_headline?: string; // e.g. "36% Seats Open"
   departure_note?: string; // e.g. "Depart 9:27 AM (+12m wait)"
   category?: 'fastest' | 'comfortable' | 'wait_and_sit';
+  live_buses?: LiveVehiclePosition[];
+  feed_status?: LiveFeedStatus;
 }
 
 export interface ApiPlanResponse {
