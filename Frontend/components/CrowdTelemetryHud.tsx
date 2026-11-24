@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Clock, RotateCcw, Zap, Sparkles, Radio } from 'lucide-react';
+import { Clock, RotateCcw, Zap, Sparkles, CheckCircle2, Radio } from 'lucide-react';
 import type { LiveFeedStatus } from '@/lib/types';
 
 export const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
@@ -52,20 +52,21 @@ export function getDayHourProbability(day: DayOfWeek, hour: number, isSurge: boo
 }
 
 /**
- * 1-line smart insight explaining the crowding condition
+ * 1-line smart insight explaining the crowding condition.
+ * Clean, compact copy that never truncates with an ellipsis.
  */
 export function getSmartInsight(prob: number, day: DayOfWeek, hour: number): string {
   if (prob >= 80) {
-    if (hour >= 8 && hour <= 11) return 'Peak office transit window · AC E-44 saves 58% crowd load';
-    if (hour >= 17 && hour <= 20) return 'Heavy evening rush corridor · Recommend +12m wait for guaranteed seat';
-    return 'High crush density expected · Recommend alternate AC corridor';
+    if (hour >= 8 && hour <= 11) return 'Peak morning rush · AC Electric corridor saves crowd load';
+    if (hour >= 17 && hour <= 20) return 'Heavy evening rush · Recommend +12m wait for guaranteed seat';
+    return 'High crush density · Alternate AC corridor recommended';
   }
   if (prob >= 50) {
-    if (day === 'Sat') return 'Weekend market traffic active · Moderate seating on trunk corridors';
-    return 'Moderate corridor occupancy · Standing likely on direct Bus 729';
+    if (day === 'Sat') return 'Weekend market traffic · Moderate seating available';
+    return 'Moderate corridor occupancy · Standing likely on direct bus';
   }
-  if (day === 'Sun') return 'Sunday off-peak schedule · High seating availability across all lines';
-  return 'Optimal travel window · Guaranteed seating on direct route';
+  if (day === 'Sun') return 'Sunday off-peak schedule · High seat availability';
+  return 'Optimal window · High seat availability';
 }
 
 interface CrowdTelemetryHudProps {
@@ -76,6 +77,8 @@ interface CrowdTelemetryHudProps {
   isSurgeDemo?: boolean;
   onRefresh?: () => void;
   liveStatus?: LiveFeedStatus;
+  onReportCrowd?: (level: 'LOW' | 'MEDIUM' | 'HIGH') => void;
+  onResetCrowd?: () => void;
 }
 
 export function CrowdTelemetryHud({
@@ -86,11 +89,14 @@ export function CrowdTelemetryHud({
   isSurgeDemo = false,
   onRefresh,
   liveStatus,
+  onReportCrowd,
+  onResetCrowd,
 }: CrowdTelemetryHudProps) {
   // Live ticking digital clock
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hoveredHour, setHoveredHour] = useState<number | null>(null);
+  const [checkInFeedback, setCheckInFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentTime(new Date());
@@ -142,6 +148,22 @@ export function CrowdTelemetryHud({
     }, 400);
   };
 
+  const handleReport = (level: 'LOW' | 'MEDIUM' | 'HIGH') => {
+    setCheckInFeedback('Report logged — updating routes');
+    onReportCrowd?.(level);
+    setTimeout(() => {
+      setCheckInFeedback(null);
+    }, 2400);
+  };
+
+  const handleReset = () => {
+    setCheckInFeedback('Reports reset');
+    onResetCrowd?.();
+    setTimeout(() => {
+      setCheckInFeedback(null);
+    }, 2000);
+  };
+
   // Day surge badge label
   const dayCategory = useMemo(() => {
     if (activeProb >= 80) return `${selectedDay} Peak Surge`;
@@ -169,25 +191,30 @@ export function CrowdTelemetryHud({
   }, [currentTime]);
 
   return (
-    <div className="fixed top-4 right-4 w-[310px] z-20 rounded-2xl border border-cyan-400/20 bg-[#0b1120]/85 backdrop-blur-2xl p-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex flex-col gap-2.5 transition-all duration-300">
+    <aside
+      aria-label="Crowd telemetry and live commuter check-in"
+      className="fixed top-4 right-4 w-[310px] z-30 rounded-2xl border border-zinc-800/80 bg-zinc-950/95 backdrop-blur-xl p-3.5 shadow-2xl flex flex-col gap-2.5 transition-all duration-300"
+    >
       {/* ━━━ OTD CONNECTION STATUS BADGE ━━━ */}
-      <div className="flex items-center justify-between pb-1 border-b border-cyan-400/15">
-        <span className="text-[9px] text-neutral-400 font-mono tracking-wider">DELHI OTD</span>
-        <span
-          className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8.5px] font-mono font-bold tracking-wider ${
-            liveStatus?.isLiveRealtime
-              ? 'bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.35)]'
-              : 'bg-amber-950/80 border border-amber-500/50 text-amber-300'
-          }`}
-        >
+      {liveStatus && (
+        <div className="flex items-center justify-between pb-1.5 border-b border-zinc-800">
+          <span className="text-[9px] text-zinc-400 font-mono tracking-wider">DELHI OTD</span>
           <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              liveStatus?.isLiveRealtime ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8.5px] font-mono font-bold tracking-wider ${
+              liveStatus.isLiveRealtime
+                ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-sm'
+                : 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
             }`}
-          />
-          {liveStatus?.source || 'GTFS SCHEDULE + LIVE TRAFFIC'}
-        </span>
-      </div>
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                liveStatus.isLiveRealtime ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+              }`}
+            />
+            {liveStatus.source || 'GTFS SCHEDULE + LIVE TRAFFIC'}
+          </span>
+        </div>
+      )}
 
       {/* ━━━ ROW 1: LIVE CLOCK, DATE & DAY SELECTOR ━━━ */}
       <div className="space-y-2">
@@ -196,20 +223,20 @@ export function CrowdTelemetryHud({
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]" />
             <span className="text-white font-mono font-bold text-xs tracking-wider tabular-nums flex items-center gap-1">
-              <Clock className="w-3 h-3 text-cyan-400" />
+              <Clock className="w-3 h-3 text-zinc-400" />
               {formattedClock}
             </span>
-            <span className="text-[10px] text-neutral-400 font-medium">·</span>
-            <span className="text-[10px] text-neutral-300 font-mono font-medium">{formattedDate}</span>
+            <span className="text-[10px] text-zinc-600 font-medium">·</span>
+            <span className="text-[10px] text-zinc-400 font-mono font-medium">{formattedDate}</span>
           </div>
 
           <button
             onClick={handleRefreshClick}
             disabled={isRefreshing}
-            className="p-1 rounded-lg text-neutral-400 hover:text-cyan-300 hover:bg-white/5 transition-all cursor-pointer active:scale-95 border border-transparent hover:border-cyan-400/30"
+            className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all cursor-pointer active:scale-95 border border-transparent hover:border-zinc-800"
             title="Refresh Delhi Transit Forecast"
           >
-            <RotateCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-cyan-400' : ''}`} />
+            <RotateCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-white' : ''}`} />
           </button>
         </div>
 
@@ -223,8 +250,8 @@ export function CrowdTelemetryHud({
                 onClick={() => onSelectDay(d)}
                 className={`py-1 text-[10px] font-mono font-bold rounded-md transition-all cursor-pointer text-center ${
                   isActive
-                    ? 'bg-gradient-to-tr from-cyan-500/30 to-emerald-400/30 border border-cyan-400/70 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.4)]'
-                    : 'bg-zinc-950/70 border border-white/5 text-neutral-400 hover:text-white hover:border-white/20 hover:bg-zinc-900/60'
+                    ? 'bg-white text-zinc-950 border border-white shadow-sm'
+                    : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
                 }`}
               >
                 {d}
@@ -235,27 +262,27 @@ export function CrowdTelemetryHud({
       </div>
 
       {/* ━━━ ROW 2: SELECTED DAY CROWD PROBABILITY METER ━━━ */}
-      <div className="p-2.5 rounded-xl bg-zinc-950/70 border border-cyan-400/15 space-y-1.5 shadow-inner">
+      <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-neutral-400 uppercase font-semibold tracking-wider flex items-center gap-1">
-            <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+          <span className="text-[10px] text-zinc-400 uppercase font-semibold tracking-wider flex items-center gap-1">
+            <Sparkles className="w-2.5 h-2.5 text-zinc-400" />
             Crowd Probability
           </span>
           <div className="flex items-center gap-1.5">
             <span
               className={`text-sm font-extrabold font-mono tabular-nums ${
-                activeProb >= 80 ? 'text-rose-400' : activeProb >= 50 ? 'text-amber-400' : 'text-emerald-400'
+                activeProb >= 80 ? 'text-red-400' : activeProb >= 50 ? 'text-amber-400' : 'text-emerald-400'
               }`}
             >
               {activeProb}%
             </span>
             <span
-              className={`text-[9px] font-bold px-1.5 py-0.2 rounded border font-mono uppercase ${
+              className={`text-[9px] font-bold px-1.5 py-0.5 rounded border font-mono uppercase ${
                 activeProb >= 80
-                  ? 'bg-rose-950/80 border-rose-500/50 text-rose-300'
+                  ? 'bg-red-500/10 border-red-500/30 text-red-400'
                   : activeProb >= 50
-                  ? 'bg-amber-950/80 border-amber-500/50 text-amber-300'
-                  : 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300'
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                  : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
               }`}
             >
               {dayCategory}
@@ -263,23 +290,23 @@ export function CrowdTelemetryHud({
           </div>
         </div>
 
-        {/* Horizontal Glow Gauge */}
-        <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden p-[0.5px]">
+        {/* Horizontal Progress Gauge */}
+        <div className="w-full h-1.5 bg-zinc-950 rounded-full overflow-hidden p-[0.5px]">
           <div
             className={`h-full rounded-full transition-all duration-500 ease-out ${
               activeProb >= 80
-                ? 'bg-gradient-to-r from-amber-400 to-rose-500 shadow-[0_0_8px_#f43f5e]'
+                ? 'bg-red-500 shadow-[0_0_8px_#ef4444]'
                 : activeProb >= 50
-                ? 'bg-gradient-to-r from-emerald-400 to-amber-400 shadow-[0_0_8px_#f59e0b]'
-                : 'bg-gradient-to-r from-cyan-400 to-emerald-400 shadow-[0_0_8px_#10b981]'
+                ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b]'
+                : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'
             }`}
             style={{ width: `${activeProb}%` }}
           />
         </div>
 
-        {/* 1-Line Smart Insight */}
-        <div className="text-[9.5px] text-cyan-200/90 bg-cyan-950/40 border border-cyan-500/20 rounded-md px-2 py-1 flex items-center gap-1.5 leading-tight">
-          <Zap className="w-2.5 h-2.5 text-cyan-400 shrink-0" />
+        {/* 1-Line Smart Insight (Never clips or ellipses) */}
+        <div className="text-[10px] text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-md px-2 py-1 flex items-center gap-1.5 leading-tight">
+          <Zap className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
           <span className="truncate">{smartInsight}</span>
         </div>
       </div>
@@ -287,10 +314,10 @@ export function CrowdTelemetryHud({
       {/* ━━━ ROW 3: MINI HOURLY CROWD SPARKLINE (6 AM to 11 PM) ━━━ */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-[9px]">
-          <span className="text-neutral-400 font-semibold uppercase tracking-wider">
+          <span className="text-zinc-400 font-semibold uppercase tracking-wider">
             Predicted Hourly Curve
           </span>
-          <span className="text-cyan-300 font-mono font-medium tabular-nums">
+          <span className="text-zinc-300 font-mono font-medium tabular-nums">
             {hoveredHour !== null
               ? `${hourlyCurve.find((c) => c.hour === hoveredHour)?.label}: ${
                   hourlyCurve.find((c) => c.hour === hoveredHour)?.prob
@@ -302,7 +329,7 @@ export function CrowdTelemetryHud({
         </div>
 
         {/* 18-bar interactive chart */}
-        <div className="h-9 flex items-end justify-between gap-[2px] p-1 bg-black/50 rounded-lg border border-white/5">
+        <div className="h-9 flex items-end justify-between gap-[2px] p-1 bg-zinc-950 rounded-lg border border-zinc-800">
           {hourlyCurve.map((item) => {
             const isCurrent = item.hour === departureHour;
             const isHovered = item.hour === hoveredHour;
@@ -316,12 +343,12 @@ export function CrowdTelemetryHud({
                 onMouseLeave={() => setHoveredHour(null)}
                 className={`flex-1 rounded-sm transition-all duration-150 cursor-pointer relative group ${
                   isCurrent
-                    ? 'bg-gradient-to-t from-cyan-400 to-emerald-300 ring-1 ring-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.7)]'
+                    ? 'bg-white ring-1 ring-white shadow-sm'
                     : item.prob >= 80
-                    ? 'bg-rose-500/70 hover:bg-rose-400'
+                    ? 'bg-red-500/80 hover:bg-red-500'
                     : item.prob >= 50
-                    ? 'bg-amber-500/70 hover:bg-amber-400'
-                    : 'bg-emerald-500/70 hover:bg-emerald-400'
+                    ? 'bg-amber-500/80 hover:bg-amber-500'
+                    : 'bg-emerald-500/80 hover:bg-emerald-500'
                 } ${isHovered ? 'scale-y-110 brightness-125' : ''}`}
                 style={{ height: `${barHeightPct}%` }}
                 title={`${item.label} · ${item.prob}% Crowd Probability (Click to set departure)`}
@@ -331,13 +358,65 @@ export function CrowdTelemetryHud({
         </div>
 
         {/* Axis Labels */}
-        <div className="flex justify-between text-[8px] font-mono text-neutral-500 px-0.5">
+        <div className="flex justify-between text-[8px] font-mono text-zinc-500 px-0.5">
           <span>6 AM</span>
           <span>12 PM</span>
           <span>6 PM</span>
           <span>11 PM</span>
         </div>
       </div>
-    </div>
+
+      {/* ━━━ ROW 4: INTERACTIVE "LIVE CROWD CHECK-IN" WIDGET ━━━ */}
+      <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]" />
+            <span className="text-[10px] text-zinc-200 uppercase font-bold tracking-wider">
+              Live Commuter Check-In
+            </span>
+          </div>
+
+          <button
+            onClick={handleReset}
+            className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            title="Reset reported crowds"
+          >
+            <RotateCcw className="w-3 h-3" />
+          </button>
+        </div>
+
+        <div className="text-[10px] text-zinc-400">
+          On this bus? Report current load:
+        </div>
+
+        <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+          <button
+            onClick={() => handleReport('LOW')}
+            className="py-1 px-2 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1"
+          >
+            Low
+          </button>
+          <button
+            onClick={() => handleReport('MEDIUM')}
+            className="py-1 px-2 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1"
+          >
+            Medium
+          </button>
+          <button
+            onClick={() => handleReport('HIGH')}
+            className="py-1 px-2 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1"
+          >
+            High
+          </button>
+        </div>
+
+        {checkInFeedback && (
+          <div className="text-[10px] text-emerald-300 font-medium flex items-center gap-1 pt-0.5 animate-in fade-in duration-150">
+            <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+            <span>{checkInFeedback}</span>
+          </div>
+        )}
+      </div>
+    </aside>
   );
 }

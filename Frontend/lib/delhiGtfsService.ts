@@ -313,7 +313,7 @@ class DelhiGtfsService {
           const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(buffer));
           const liveBuses: LiveVehiclePosition[] = [];
 
-          feed.entity.forEach((entity) => {
+          feed.entity.forEach((entity: any) => {
             if (entity.vehicle && entity.vehicle.position) {
               const vRoute = entity.vehicle.trip?.routeId;
               if (!routeId || vRoute === routeId || String(vRoute).includes(routeId)) {

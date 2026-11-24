@@ -53,7 +53,7 @@ test('GET /api/plan?origin=uttam_nagar&destination=connaught_place&time=09:15', 
   assert.equal(data.query.destination, 'Connaught Place');
   assert.equal(data.query.time, '09:15');
   assert.ok(Array.isArray(data.routes));
-  assert.equal(data.routes.length, 2);
+  assert.equal(data.routes.length, 3);
 
   const direct = data.routes.find(r => r.id === 'route_729');
   assert.ok(direct);
@@ -73,6 +73,10 @@ test('GET /api/plan?origin=uttam_nagar&destination=connaught_place&time=09:15', 
   assert.ok(alternate);
   assert.equal(alternate.tag, 'MOST COMFORTABLE');
   assert.ok(alternate.comfort_score > direct.comfort_score);
+
+  const waitSit = data.routes.find(r => r.id === 'route_729_wait12');
+  assert.ok(waitSit);
+  assert.equal(waitSit.tag, 'ALTERNATE');
 });
 
 test('POST /api/report-crowd and POST /api/reset', async () => {
