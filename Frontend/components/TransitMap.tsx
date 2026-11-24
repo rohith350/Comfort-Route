@@ -412,33 +412,33 @@ export default function TransitMap({
         <button
           onClick={fitMapToActiveRoute}
           title="Recenter Map to Active Corridor"
-          className="px-3 py-1.5 bg-[#0b1120]/90 hover:bg-[#0f172a] backdrop-blur-xl border border-cyan-400/20 hover:border-cyan-400/60 rounded-xl text-neutral-300 hover:text-white text-xs flex items-center gap-2 shadow-[0_8px_32px_rgba(0,0,0,0.65)] transition-all cursor-pointer"
+          className="px-3 py-1.5 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 rounded-xl text-zinc-300 hover:text-white text-xs flex items-center gap-2 shadow-2xl transition-all cursor-pointer"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+          <span className="w-1.5 h-1.5 rounded-full bg-white" />
           <span className="font-medium">Fit Corridor</span>
         </button>
       </div>
 
       {/* Zoom Controls */}
-      <div className="absolute bottom-5 right-5 z-[500] flex flex-col gap-1.5 pointer-events-auto">
+      <div className="absolute bottom-5 right-5 z-20 flex flex-col gap-1.5 pointer-events-auto">
         <button
           onClick={() => mapRef.current?.zoomIn()}
           aria-label="Zoom in"
-          className="w-8 h-8 bg-[#0b1120]/90 hover:bg-[#0f172a] backdrop-blur-xl border border-cyan-400/20 rounded-xl text-white font-bold flex items-center justify-center text-sm shadow-[0_8px_32px_rgba(0,0,0,0.65)] cursor-pointer transition-all hover:scale-105 active:scale-95"
+          className="w-8 h-8 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 rounded-xl text-white font-bold flex items-center justify-center text-sm shadow-2xl cursor-pointer transition-all hover:scale-105 active:scale-95"
         >
           +
         </button>
         <button
           onClick={() => mapRef.current?.zoomOut()}
           aria-label="Zoom out"
-          className="w-8 h-8 bg-[#0b1120]/90 hover:bg-[#0f172a] backdrop-blur-xl border border-cyan-400/20 rounded-xl text-white font-bold flex items-center justify-center text-sm shadow-[0_8px_32px_rgba(0,0,0,0.65)] cursor-pointer transition-all hover:scale-105 active:scale-95"
+          className="w-8 h-8 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 rounded-xl text-white font-bold flex items-center justify-center text-sm shadow-2xl cursor-pointer transition-all hover:scale-105 active:scale-95"
         >
           −
         </button>
       </div>
 
       {/* Attribution & Legend (clean bottom right above zoom) */}
-      <div className="absolute bottom-5 left-20 z-[500] flex items-center gap-3 text-[10px] text-neutral-300 font-mono pointer-events-none bg-[#0b1120]/90 backdrop-blur-xl px-3 py-1.5 rounded-full border border-cyan-400/20 shadow-[0_8px_32px_rgba(0,0,0,0.65)]">
+      <div className="absolute bottom-5 left-20 z-20 flex items-center gap-3 text-[10px] text-zinc-400 font-mono pointer-events-none bg-zinc-950/90 backdrop-blur-xl px-3 py-1.5 rounded-full border border-zinc-800 shadow-2xl">
         <div className="flex items-center gap-1.5 font-sans font-medium">
           <span className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_6px_#10b981]" /> &lt;50%
         </div>
@@ -448,8 +448,8 @@ export default function TransitMap({
         <div className="flex items-center gap-1.5 font-sans font-medium">
           <span className="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_6px_#ef4444]" /> &gt;80%
         </div>
-        <span className="text-white/20">|</span>
-        <span className="text-cyan-300/80 font-sans">Delhi Transit OSRM</span>
+        <span className="text-zinc-600">|</span>
+        <span className="text-zinc-400 font-sans">Delhi Transit OSRM</span>
       </div>
     </div>
   );

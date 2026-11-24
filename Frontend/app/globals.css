@@ -3,13 +3,13 @@
 @import "shadcn/tailwind.css";
 
 :root {
-  --background: #07090c;
+  --background: #09090b;
   --foreground: #ededed;
 }
 
 body {
   margin: 0;
-  background-color: #07090c !important;
+  background-color: #09090b !important;
   color: #ededed !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow: hidden;
@@ -25,11 +25,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(34, 211, 238, 0.4);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .scrollbar-none::-webkit-scrollbar {
@@ -93,23 +93,23 @@ input[type="range"].custom-slider::-webkit-slider-thumb {
   height: 14px;
   width: 14px;
   border-radius: 50%;
-  background: #22d3ee;
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.9), 0 0 4px rgba(16, 185, 129, 0.8);
+  background: #ffffff;
+  border: 2px solid #27272a;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
   cursor: pointer;
   margin-top: -5px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 input[type="range"].custom-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.3);
-  box-shadow: 0 0 16px rgba(34, 211, 238, 1), 0 0 8px rgba(16, 185, 129, 1);
+  transform: scale(1.25);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
 }
 
 input[type="range"].custom-slider::-webkit-slider-runnable-track {
   width: 100%;
   height: 4px;
-  background: #0f172a;
+  background: #18181b;
   border-radius: 9999px;
 }
 
@@ -117,47 +117,71 @@ input[type="range"].custom-slider::-moz-range-thumb {
   height: 14px;
   width: 14px;
   border-radius: 50%;
-  background: #22d3ee;
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.9);
+  background: #ffffff;
+  border: 2px solid #27272a;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
   cursor: pointer;
 }
 
-/* Leaflet dark map tiles styling */
+/* Leaflet dark map tiles styling & pane z-index containment */
 .leaflet-container {
   width: 100% !important;
   height: 100% !important;
-  background-color: #07090c !important;
+  background-color: #09090b !important;
   font-family: inherit !important;
 }
 
 .dark-map-tiles .leaflet-tile {
-  filter: brightness(0.58) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.2) brightness(0.68);
+  filter: brightness(0.55) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.15) brightness(0.65);
+}
+
+/* Ensure Leaflet markers & tooltips stay at z-20 (below z-30 floating cards) */
+.leaflet-pane {
+  z-index: 10 !important;
+}
+.leaflet-tile-pane {
+  z-index: 2 !important;
+}
+.leaflet-overlay-pane {
+  z-index: 8 !important;
+}
+.leaflet-marker-pane {
+  z-index: 15 !important;
+}
+.leaflet-tooltip-pane {
+  z-index: 20 !important;
+}
+.leaflet-popup-pane {
+  z-index: 20 !important;
+}
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 22 !important;
 }
 
 .leaflet-popup-content-wrapper {
-  background: rgba(11, 17, 32, 0.95) !important;
-  color: #f3f4f6 !important;
-  border: 1px solid rgba(34, 211, 238, 0.25) !important;
+  background: rgba(9, 9, 11, 0.95) !important;
+  color: #ededed !important;
+  border: 1px solid rgba(39, 39, 42, 0.8) !important;
   border-radius: 0.75rem !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85) !important;
   backdrop-filter: blur(16px) !important;
 }
 
 .leaflet-popup-tip {
-  background: rgba(11, 17, 32, 0.95) !important;
+  background: rgba(9, 9, 11, 0.95) !important;
 }
 
 /* Custom Leaflet Tooltip */
 .transit-tooltip {
-  background: rgba(11, 17, 32, 0.95) !important;
-  border: 1px solid rgba(34, 211, 238, 0.25) !important;
+  background: rgba(9, 9, 11, 0.95) !important;
+  border: 1px solid rgba(39, 39, 42, 0.8) !important;
   border-radius: 8px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85) !important;
   backdrop-filter: blur(12px) !important;
-  color: #f3f4f6 !important;
+  color: #ededed !important;
   padding: 4px 8px !important;
 }
 .transit-tooltip::before {
-  border-top-color: rgba(11, 17, 32, 0.95) !important;
+  border-top-color: rgba(9, 9, 11, 0.95) !important;
 }

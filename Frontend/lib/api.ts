@@ -233,8 +233,8 @@ export function calculateDynamicPlan(
         {
           id: 'route_729_wait12',
           name: `Bus 729 (Depart ${departurePlus12})`,
-          tag: 'MOST COMFORTABLE',
-          bus_numbers: ['729'],
+          tag: 'ALTERNATE',
+          bus_numbers: ['729 (+12m)'],
           eta_minutes: 54, // 42m + 12m wait
           transfers: 0,
           headway_mins: 12,
@@ -318,8 +318,8 @@ export function calculateDynamicPlan(
         {
           id: 'route_429_wait12',
           name: `Bus 429 (Depart ${departurePlus12})`,
-          tag: 'MOST COMFORTABLE',
-          bus_numbers: ['429'],
+          tag: 'ALTERNATE',
+          bus_numbers: ['429 (+12m)'],
           eta_minutes: 60,
           transfers: 0,
           headway_mins: 12,
@@ -401,8 +401,8 @@ export function calculateDynamicPlan(
         {
           id: 'route_534_wait12',
           name: `Bus 534 (Depart ${departurePlus12})`,
-          tag: 'MOST COMFORTABLE',
-          bus_numbers: ['534'],
+          tag: 'ALTERNATE',
+          bus_numbers: ['534 (+12m)'],
           eta_minutes: 66,
           transfers: 0,
           headway_mins: 12,
@@ -482,8 +482,8 @@ export function calculateDynamicPlan(
         {
           id: 'route_505_wait12',
           name: `Bus 505 (Depart ${departurePlus12})`,
-          tag: 'MOST COMFORTABLE',
-          bus_numbers: ['505'],
+          tag: 'ALTERNATE',
+          bus_numbers: ['505 (+12m)'],
           eta_minutes: 47,
           transfers: 0,
           headway_mins: 12,
@@ -558,8 +558,8 @@ export function calculateDynamicPlan(
       {
         id: 'route_generic_wait12',
         name: `Express Direct (Depart ${departurePlus12})`,
-        tag: 'MOST COMFORTABLE',
-        bus_numbers: ['601'],
+        tag: 'ALTERNATE',
+        bus_numbers: ['601 (+12m)'],
         eta_minutes: 52,
         transfers: 0,
         headway_mins: 12,

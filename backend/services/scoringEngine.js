@@ -152,14 +152,32 @@ export function assignDynamicTags(routes) {
   if (!routes || routes.length === 0) return routes;
 
   let minEta = Infinity;
-  routes.forEach(r => {
-    if (r.eta_minutes < minEta) minEta = r.eta_minutes;
+  let fastestIndex = 0;
+  routes.forEach((r, idx) => {
+    if (r.eta_minutes < minEta && !r.category?.includes('wait')) {
+      minEta = r.eta_minutes;
+      fastestIndex = idx;
+    }
   });
 
-  routes.forEach(r => {
-    if (r.eta_minutes === minEta && !r.category?.includes('wait')) {
+  let bestComfortIndex = -1;
+  let maxComfort = -Infinity;
+  let minOcc = Infinity;
+  routes.forEach((r, idx) => {
+    if (idx === fastestIndex && routes.length > 1) return;
+    if (r.comfort_score > maxComfort || (r.comfort_score === maxComfort && r.overall_occupancy_pct < minOcc)) {
+      maxComfort = r.comfort_score;
+      minOcc = r.overall_occupancy_pct;
+      bestComfortIndex = idx;
+    }
+  });
+
+  if (bestComfortIndex === -1) bestComfortIndex = 0;
+
+  routes.forEach((r, idx) => {
+    if (idx === fastestIndex) {
       r.tag = 'FASTEST';
-    } else if (r.comfort_score >= 75 || r.category === 'comfortable' || r.category === 'wait_and_sit') {
+    } else if (idx === bestComfortIndex) {
       r.tag = 'MOST COMFORTABLE';
     } else {
       r.tag = 'ALTERNATE';
