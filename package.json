@@ -1,0 +1,18 @@
+{
+  "name": "comfort-route-monorepo",
+  "version": "1.0.0",
+  "description": "Crowdedness-Aware Journey Planner for Delhi Transit",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd Frontend && npm run dev",
+    "dev": "concurrently -k -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start": "npm run dev",
+    "build": "cd Frontend && npm run build",
+    "test:backend": "cd backend && npm test",
+    "test": "npm run test:backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
