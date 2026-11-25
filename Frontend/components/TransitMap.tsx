@@ -28,7 +28,7 @@ function getNeonColor(loadPct: number): string {
   return '#10b981'; // Vibrant Emerald
 }
 
-type MapMode = 'satellite' | 'dark';
+type MapMode = 'satellite' | 'street';
 
 export default function TransitMap({
   routes,
@@ -87,15 +87,16 @@ export default function TransitMap({
     };
   }, []);
 
-  // ─── Manage Base Tile Layers (Hybrid Satellite vs Dark Map) ───
+  // ─── Manage Base Tile Layers (Hybrid Satellite vs Light Street Map) ───
   useEffect(() => {
     const baseGroup = baseLayerGroupRef.current;
     if (!baseGroup) return;
 
     baseGroup.clearLayers();
 
+    const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY;
+
     if (mapMode === 'satellite') {
-      const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY;
       if (maptilerKey) {
         // MapTiler Hybrid raster tiles
         const maptilerHybrid = L.tileLayer(
@@ -129,13 +130,28 @@ export default function TransitMap({
         baseGroup.addLayer(esriLabels);
       }
     } else {
-      // Dark-themed Street Map
-      const osmDark = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        className: 'dark-map-tiles',
-        attribution: '&copy; OpenStreetMap contributors',
-      });
-      baseGroup.addLayer(osmDark);
+      // Light, high-readability Street Map (replaces dark map)
+      if (maptilerKey) {
+        const maptilerStreets = L.tileLayer(
+          `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${maptilerKey}`,
+          {
+            maxZoom: 19,
+            attribution: '&copy; MapTiler &copy; OpenStreetMap contributors',
+          }
+        );
+        baseGroup.addLayer(maptilerStreets);
+      } else {
+        // Zero-Key CartoDB Voyager Light Street Map
+        const streetMap = L.tileLayer(
+          'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+          {
+            subdomains: 'abcd',
+            maxZoom: 20,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          }
+        );
+        baseGroup.addLayer(streetMap);
+      }
     }
   }, [mapMode]);
 
@@ -234,9 +250,9 @@ export default function TransitMap({
       if (coords.length < 2) return;
 
       const unselectedCasing = L.polyline(coords, {
-        color: '#090d16',
-        weight: 5,
-        opacity: 0.8,
+        color: '#0f172a',
+        weight: 5.5,
+        opacity: 0.85,
         dashArray: '6, 8',
         lineCap: 'round',
       });
@@ -245,7 +261,7 @@ export default function TransitMap({
       const unselectedLine = L.polyline(coords, {
         color: '#64748b',
         weight: 2.5,
-        opacity: 0.5,
+        opacity: 0.6,
         dashArray: '6, 8',
         lineCap: 'round',
       });
@@ -255,13 +271,13 @@ export default function TransitMap({
 
     const activePathPoints: [number, number][] = [];
 
-    // 2. High-Contrast Neon Road Polylines with Dark Casing Stroke
+    // 2. High-Contrast Route Segments with Dark Casing Stroke (#0f172a, 3px wider than core line)
     if (roadSegments.length > 0) {
       roadSegments.forEach((segment) => {
         if (segment.coordinates.length < 2) return;
         activePathPoints.push(...segment.coordinates);
 
-        // Tier 1: Soft Outer Neon Halo
+        // Tier 1: Soft Outer Glow
         const halo = L.polyline(segment.coordinates, {
           color: segment.color,
           weight: 12,
@@ -271,9 +287,9 @@ export default function TransitMap({
         });
         layer.addLayer(halo);
 
-        // Tier 2: Dark Outer Casing Stroke (#090d16) to ensure separation against bright satellite terrain
+        // Tier 2: Dark Outer Casing (#0f172a, 7px - exactly 3px wider than 4px core)
         const casing = L.polyline(segment.coordinates, {
-          color: '#090d16',
+          color: '#0f172a',
           weight: 7,
           opacity: 0.95,
           lineCap: 'round',
@@ -281,10 +297,10 @@ export default function TransitMap({
         });
         layer.addLayer(casing);
 
-        // Tier 3: Core Crisp Neon Line
+        // Tier 3: Core Crisp Colored Line (4px)
         const core = L.polyline(segment.coordinates, {
           color: segment.color,
-          weight: 3.5,
+          weight: 4,
           opacity: 1,
           lineCap: 'round',
           lineJoin: 'round',
@@ -313,14 +329,14 @@ export default function TransitMap({
         lineCap: 'round',
       });
       const casing = L.polyline(coords, {
-        color: '#090d16',
+        color: '#0f172a',
         weight: 7,
         opacity: 0.95,
         lineCap: 'round',
       });
       const core = L.polyline(coords, {
         color,
-        weight: 3.5,
+        weight: 4,
         opacity: 1,
         lineCap: 'round',
       });
@@ -329,7 +345,7 @@ export default function TransitMap({
       layer.addLayer(core);
     }
 
-    // 3. Render Stop Markers with Origin/Destination Pulsing Beacons
+    // 3. Render Stop Markers with Double-Border & Drop Shadow
     if (activeRoute) {
       activeRoute.stops.forEach((stop: ApiScoredStop, idx: number) => {
         const isOrigin = idx === 0;
@@ -341,23 +357,23 @@ export default function TransitMap({
 
         if (isOrigin) {
           markerHtml = `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.9));">
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 10px rgba(15,23,42,0.85));">
               <div class="animate-beacon" style="position:absolute;width:34px;height:34px;border-radius:50%;background:#10b981;border:2px solid #34d399;opacity:0.8;"></div>
               <div style="position:absolute;width:24px;height:24px;border-radius:50%;background:#10b98125;"></div>
-              <div style="width:14px;height:14px;background:#10b981;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 0 2px #090d16, 0 0 14px #10b981, 0 0 4px #ffffff;"></div>
+              <div style="width:14px;height:14px;background:#10b981;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 0 2px #0f172a, 0 0 14px #10b981, 0 0 4px #ffffff;"></div>
             </div>
           `;
         } else if (isDestination) {
           markerHtml = `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.9));">
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 10px rgba(15,23,42,0.85));">
               <div class="animate-beacon" style="position:absolute;width:34px;height:34px;border-radius:50%;background:#38bdf8;border:2px solid #7dd3fc;opacity:0.8;"></div>
               <div style="position:absolute;width:24px;height:24px;border-radius:50%;background:#38bdf825;"></div>
-              <div style="width:14px;height:14px;background:#38bdf8;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 0 2px #090d16, 0 0 14px #38bdf8, 0 0 4px #ffffff;"></div>
+              <div style="width:14px;height:14px;background:#38bdf8;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 0 2px #0f172a, 0 0 14px #38bdf8, 0 0 4px #ffffff;"></div>
             </div>
           `;
         } else {
           markerHtml = `
-            <div style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.92));">
+            <div style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(15,23,42,0.85));">
               ${
                 isMetro
                   ? `
@@ -366,7 +382,7 @@ export default function TransitMap({
                   width:20px;height:20px;
                   border-radius:50%;
                   border:2px solid ${dotColor};
-                  background:rgba(9, 13, 22, 0.75);
+                  background:rgba(15, 23, 42, 0.75);
                   box-shadow:0 0 8px ${dotColor}aa;
                 "></div>`
                   : ''
@@ -374,9 +390,9 @@ export default function TransitMap({
               <div style="
                 width:${isMetro ? 11 : 9}px;height:${isMetro ? 11 : 9}px;
                 background:${dotColor};
-                border:2px solid #090d16;
+                border:2px solid #0f172a;
                 border-radius:50%;
-                box-shadow:0 0 0 1.5px #ffffffdd, 0 0 8px ${dotColor}cc;
+                box-shadow:0 0 0 1.5px #ffffff, 0 0 8px ${dotColor}cc;
               "></div>
             </div>
           `;
@@ -549,7 +565,7 @@ export default function TransitMap({
 
       {/* Map Mode Switcher Pill & Corridor Recenter Button */}
       <div className="absolute top-[4.25rem] right-3 md:top-auto md:bottom-5 md:right-16 z-20 pointer-events-auto flex items-center gap-1.5 md:gap-2">
-        {/* Compact Toggle Pill (Satellite | Dark Map) */}
+        {/* Compact Toggle Pill (Satellite | Street Map) */}
         <div className="flex items-center p-0.5 rounded-xl bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 shadow-2xl">
           <button
             type="button"
@@ -565,15 +581,15 @@ export default function TransitMap({
           </button>
           <button
             type="button"
-            onClick={() => setMapMode('dark')}
-            aria-pressed={mapMode === 'dark'}
+            onClick={() => setMapMode('street')}
+            aria-pressed={mapMode === 'street'}
             className={`px-2 py-1 md:px-2.5 rounded-lg text-[10.5px] md:text-[11px] font-medium transition-all duration-150 cursor-pointer ${
-              mapMode === 'dark'
+              mapMode === 'street'
                 ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            Dark Map
+            Street Map
           </button>
         </div>
 
@@ -626,7 +642,7 @@ export default function TransitMap({
         </div>
         <span className="hidden md:inline text-zinc-600">|</span>
         <span className="hidden md:inline text-zinc-400 font-sans">
-          {mapMode === 'satellite' ? 'Esri Hybrid Satellite' : 'Dark Map'} • OSRM
+          {mapMode === 'satellite' ? 'Esri Hybrid Satellite' : 'CartoDB Light Street'} • OSRM
         </span>
       </div>
     </div>
