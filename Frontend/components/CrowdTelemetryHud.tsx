@@ -200,7 +200,7 @@ export function CrowdTelemetryHud({
       className={
         isEmbedded
           ? 'w-full flex flex-col gap-2.5'
-          : 'hidden md:flex fixed top-4 right-4 w-[310px] z-30 rounded-2xl border border-zinc-800/80 bg-zinc-950/95 backdrop-blur-xl p-3.5 shadow-2xl flex-col gap-2.5 transition-all duration-300'
+          : 'hidden md:flex fixed top-4 right-4 w-[310px] z-30 rounded-2xl glass-panel-elevated p-3.5 flex-col gap-2.5 transition-all duration-300'
       }
     >
       {/* ━━━ OTD CONNECTION STATUS BADGE ━━━ */}

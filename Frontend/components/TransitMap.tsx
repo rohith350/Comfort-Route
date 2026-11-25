@@ -556,7 +556,7 @@ export default function TransitMap({
       {/* Map Mode Switcher Pill & Corridor Recenter Button */}
       <div className="absolute top-[4.25rem] right-3 md:top-auto md:bottom-5 md:right-16 z-20 pointer-events-auto flex items-center gap-1.5 md:gap-2">
         {/* Compact Toggle Pill (Satellite | Street Map) */}
-        <div className="flex items-center p-0.5 rounded-xl bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 shadow-2xl">
+        <div className="flex items-center p-0.5 rounded-xl glass-control-elevated">
           <button
             type="button"
             onClick={() => setMapMode('satellite')}
@@ -589,7 +589,7 @@ export default function TransitMap({
           size="sm"
           onClick={fitMapToActiveRoute}
           title="Recenter Map to Active Corridor"
-          className="h-7 md:h-8 px-2 md:px-3 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border-zinc-800 hover:border-zinc-700 rounded-xl text-zinc-300 hover:text-white text-[10.5px] md:text-xs flex items-center gap-1 md:gap-1.5 shadow-2xl cursor-pointer"
+          className="h-7 md:h-8 px-2 md:px-3 glass-control-elevated hover:bg-zinc-900/90 rounded-xl text-zinc-300 hover:text-white text-[10.5px] md:text-xs flex items-center gap-1 md:gap-1.5 cursor-pointer"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
           <span className="font-medium">Fit</span>
@@ -604,7 +604,7 @@ export default function TransitMap({
           size="icon"
           onClick={() => mapRef.current?.zoomIn()}
           aria-label="Zoom in"
-          className="bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border-zinc-800 hover:border-zinc-700 rounded-xl text-white font-bold text-sm shadow-2xl cursor-pointer active:scale-95"
+          className="glass-control-elevated hover:bg-zinc-900/90 rounded-xl text-white font-bold text-sm cursor-pointer active:scale-95"
         >
           +
         </Button>
@@ -613,14 +613,14 @@ export default function TransitMap({
           size="icon"
           onClick={() => mapRef.current?.zoomOut()}
           aria-label="Zoom out"
-          className="bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border-zinc-800 hover:border-zinc-700 rounded-xl text-white font-bold text-sm shadow-2xl cursor-pointer active:scale-95"
+          className="glass-control-elevated hover:bg-zinc-900/90 rounded-xl text-white font-bold text-sm cursor-pointer active:scale-95"
         >
           −
         </Button>
       </div>
 
       {/* Attribution & Legend */}
-      <div className="absolute top-[4.25rem] left-3 md:top-auto md:bottom-5 md:left-20 z-20 flex items-center gap-2 md:gap-3 text-[9.5px] md:text-[10px] text-zinc-400 font-mono pointer-events-none bg-zinc-950/90 backdrop-blur-xl px-2.5 py-1 md:px-3 md:py-1.5 rounded-full border border-zinc-800 shadow-2xl">
+      <div className="absolute top-[4.25rem] left-3 md:top-auto md:bottom-5 md:left-20 z-20 flex items-center gap-2 md:gap-3 text-[9.5px] md:text-[10px] text-zinc-400 font-mono pointer-events-none glass-control-elevated px-2.5 py-1 md:px-3 md:py-1.5 rounded-full">
         <div className="flex items-center gap-1 md:gap-1.5 font-sans font-medium">
           <span className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_6px_#10b981]" /> &lt;50%
         </div>

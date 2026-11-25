@@ -600,7 +600,7 @@ export default function CrowdPlannerApp() {
       </div>
 
       {/* ━━━ MOBILE TOP COMPACT HEADER BAR (< 768px) ━━━ */}
-      <header className="md:hidden fixed top-3 left-3 right-3 z-30 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl px-3 py-2 shadow-2xl flex items-center justify-between gap-2">
+      <header className="md:hidden fixed top-3 left-3 right-3 z-30 glass-panel-elevated rounded-2xl px-3 py-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981] shrink-0" />
           <span className="font-extrabold text-xs tracking-wider uppercase text-white truncate">
@@ -640,7 +640,7 @@ export default function CrowdPlannerApp() {
 
       {/* ━━━ 1. SLIM LEFT ICON RAIL (Desktop >= 768px) ━━━ */}
       <TooltipProvider delay={150}>
-        <aside className="hidden md:flex fixed left-4 top-4 bottom-4 w-14 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl pointer-events-auto z-30 flex-col items-center justify-between py-4">
+        <aside className="hidden md:flex fixed left-4 top-4 bottom-4 w-14 glass-panel-elevated rounded-2xl pointer-events-auto z-30 flex-col items-center justify-between py-4">
           <div className="flex flex-col items-center gap-3 w-full px-2">
             {/* Button 1: Brand / Live Feed Toggle */}
             <Tooltip>
@@ -763,7 +763,7 @@ export default function CrowdPlannerApp() {
       <div
         className={`fixed left-2.5 right-2.5 bottom-[4.5rem] ${
           isMobileSheetExpanded ? 'max-h-[74dvh]' : 'max-h-[46dvh]'
-        } md:left-[4.75rem] md:right-auto md:top-4 md:bottom-4 md:max-h-none md:w-[350px] z-30 rounded-2xl bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ease-out ${
+        } md:left-[4.75rem] md:right-auto md:top-4 md:bottom-4 md:max-h-none md:w-[350px] z-30 rounded-2xl glass-panel-elevated flex flex-col overflow-hidden transition-all duration-300 ease-out ${
           isDrawerOpen
             ? 'opacity-100 translate-y-0 md:translate-x-0 pointer-events-auto'
             : 'opacity-0 translate-y-6 md:translate-y-0 md:-translate-x-8 pointer-events-none h-0 md:h-auto md:w-0 border-transparent shadow-none'
@@ -773,7 +773,7 @@ export default function CrowdPlannerApp() {
         <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-zinc-700 to-transparent shrink-0" />
 
         {/* Mobile Bottom-Sheet Drag Handle, Expand & Collapse Buttons */}
-        <div className="md:hidden flex items-center justify-between px-3 py-1.5 border-b border-zinc-800/80 bg-zinc-950 shrink-0">
+        <div className="md:hidden flex items-center justify-between px-3 py-1.5 border-b border-white/[0.08] bg-transparent shrink-0">
           <div className="flex items-center gap-2">
             <span className="w-6 h-1 rounded-full bg-zinc-700" />
             <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-300">
@@ -812,7 +812,7 @@ export default function CrowdPlannerApp() {
         </div>
 
         {/* ─── Consolidated Header Block (Desktop) ─── */}
-        <div className="hidden md:block px-3.5 py-2.5 border-b border-zinc-800/80 shrink-0 bg-zinc-950">
+        <div className="hidden md:block px-3.5 py-2.5 border-b border-white/[0.08] shrink-0 bg-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xs tracking-wider uppercase text-white">
@@ -1669,7 +1669,7 @@ export default function CrowdPlannerApp() {
       {/* ━━━ MOBILE BOTTOM NAVIGATION BAR (< 768px, z-30) ━━━ */}
       <nav
         aria-label="Mobile navigation"
-        className="md:hidden fixed bottom-3 left-3 right-3 z-30 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl p-1.5 shadow-2xl grid grid-cols-5 gap-1"
+        className="md:hidden fixed bottom-3 left-3 right-3 z-30 glass-panel-elevated rounded-2xl p-1.5 grid grid-cols-5 gap-1"
       >
         <Button
           variant="ghost"
@@ -1745,7 +1745,7 @@ export default function CrowdPlannerApp() {
         <Button
           variant="outline"
           onClick={() => setActiveTab('details')}
-          className="hidden md:flex fixed top-[22rem] right-4 z-30 h-auto bg-zinc-950/95 backdrop-blur-xl border-zinc-800/80 rounded-xl px-3 py-1.5 shadow-2xl items-center gap-2 text-xs text-white hover:border-zinc-700 hover:bg-zinc-900 cursor-pointer active:scale-95"
+          className="hidden md:flex fixed top-[22rem] right-4 z-30 h-auto glass-panel-elevated rounded-xl px-3 py-1.5 items-center gap-2 text-xs text-white hover:border-white/30 hover:bg-zinc-900 cursor-pointer active:scale-95"
           title="Click to view Route Details"
         >
           <span className="flex items-center gap-1.5 font-bold font-mono text-[11px]">
