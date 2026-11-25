@@ -242,25 +242,16 @@ export default function TransitMap({
       animationFrameRef.current = null;
     }
 
-    // 1. Draw unselected routes as subtle dashed lines with dark casing
+    // 1. Draw unselected routes as subtle dashed lines (3px, dashArray: '6, 8', opacity 0.65)
     routes.forEach((route) => {
       if (route.id === activeRoute?.id) return;
       const coords: [number, number][] = route.stops.map((s) => [s.lat, s.lng]);
       if (coords.length < 2) return;
 
-      const unselectedCasing = L.polyline(coords, {
-        color: '#0f172a',
-        weight: 5.5,
-        opacity: 0.85,
-        dashArray: '6, 8',
-        lineCap: 'round',
-      });
-      layer.addLayer(unselectedCasing);
-
       const unselectedLine = L.polyline(coords, {
         color: '#64748b',
-        weight: 2.5,
-        opacity: 0.6,
+        weight: 3,
+        opacity: 0.65,
         dashArray: '6, 8',
         lineCap: 'round',
       });
@@ -270,39 +261,36 @@ export default function TransitMap({
 
     const activePathPoints: [number, number][] = [];
 
-    // 2. High-Contrast Route Segments with Dark Casing Stroke (#0f172a, 3px wider than core line)
+    // 2. Precise Road-Snapped Polylines with 6px Dark Casing & 4px Main Line (5px on hover)
     if (roadSegments.length > 0) {
       roadSegments.forEach((segment) => {
         if (segment.coordinates.length < 2) return;
         activePathPoints.push(...segment.coordinates);
 
-        // Tier 1: Soft Outer Glow
-        const halo = L.polyline(segment.coordinates, {
-          color: segment.color,
-          weight: 12,
-          opacity: 0.35,
-          lineCap: 'round',
-          lineJoin: 'round',
-        });
-        layer.addLayer(halo);
-
-        // Tier 2: Dark Outer Casing (#0f172a, 7px - exactly 3px wider than 4px core)
+        // Dark outer casing line (6px, #0f172a, opacity 0.85)
         const casing = L.polyline(segment.coordinates, {
           color: '#0f172a',
-          weight: 7,
-          opacity: 0.95,
+          weight: 6,
+          opacity: 0.85,
           lineCap: 'round',
           lineJoin: 'round',
         });
         layer.addLayer(casing);
 
-        // Tier 3: Core Crisp Colored Line (4px)
+        // Main crisp colored route line (4px, 5px on hover)
         const core = L.polyline(segment.coordinates, {
           color: segment.color,
           weight: 4,
           opacity: 1,
           lineCap: 'round',
           lineJoin: 'round',
+        });
+
+        core.on('mouseover', () => {
+          core.setStyle({ weight: 5 });
+        });
+        core.on('mouseout', () => {
+          core.setStyle({ weight: 4 });
         });
 
         core.bindTooltip(
@@ -321,30 +309,27 @@ export default function TransitMap({
       activePathPoints.push(...coords);
       const color = getNeonColor(activeRoute.overall_occupancy_pct);
 
-      const halo = L.polyline(coords, {
-        color,
-        weight: 12,
-        opacity: 0.35,
-        lineCap: 'round',
-      });
       const casing = L.polyline(coords, {
         color: '#0f172a',
-        weight: 7,
-        opacity: 0.95,
+        weight: 6,
+        opacity: 0.85,
         lineCap: 'round',
+        lineJoin: 'round',
       });
       const core = L.polyline(coords, {
         color,
         weight: 4,
         opacity: 1,
         lineCap: 'round',
+        lineJoin: 'round',
       });
-      layer.addLayer(halo);
+      core.on('mouseover', () => core.setStyle({ weight: 5 }));
+      core.on('mouseout', () => core.setStyle({ weight: 4 }));
       layer.addLayer(casing);
       layer.addLayer(core);
     }
 
-    // 3. Render Stop Markers with Double-Border & Drop Shadow
+    // 3. Render Stop Markers with 4-5px Radius Circle & 2px White Border
     if (activeRoute) {
       activeRoute.stops.forEach((stop: ApiScoredStop, idx: number) => {
         const isOrigin = idx === 0;
@@ -353,45 +338,51 @@ export default function TransitMap({
         const dotColor = getNeonColor(stop.load_pct);
 
         let markerHtml = '';
+        let iconSize: [number, number] = [20, 20];
+        let iconAnchor: [number, number] = [10, 10];
 
         if (isOrigin) {
+          iconSize = [26, 26];
+          iconAnchor = [13, 13];
           markerHtml = `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 10px rgba(15,23,42,0.85));">
-              <div class="animate-beacon" style="position:absolute;width:34px;height:34px;border-radius:50%;background:#10b981;border:2px solid #34d399;opacity:0.8;"></div>
-              <div style="position:absolute;width:24px;height:24px;border-radius:50%;background:#10b98125;"></div>
-              <div style="width:14px;height:14px;background:#10b981;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 0 2px #0f172a, 0 0 14px #10b981, 0 0 4px #ffffff;"></div>
+            <div style="width:26px;height:26px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <div class="animate-beacon" style="position:absolute;width:24px;height:24px;border-radius:50%;background:#10b981;border:1.5px solid #34d399;opacity:0.75;"></div>
+              <div style="width:12px;height:12px;background:#10b981;border:2px solid #ffffff;border-radius:50%;box-shadow:0 0 0 1.5px #0f172a, 0 1px 4px rgba(0,0,0,0.4);z-index:2;"></div>
             </div>
           `;
         } else if (isDestination) {
+          iconSize = [26, 26];
+          iconAnchor = [13, 13];
           markerHtml = `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 10px rgba(15,23,42,0.85));">
-              <div class="animate-beacon" style="position:absolute;width:34px;height:34px;border-radius:50%;background:#38bdf8;border:2px solid #7dd3fc;opacity:0.8;"></div>
-              <div style="position:absolute;width:24px;height:24px;border-radius:50%;background:#38bdf825;"></div>
-              <div style="width:14px;height:14px;background:#38bdf8;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 0 2px #0f172a, 0 0 14px #38bdf8, 0 0 4px #ffffff;"></div>
+            <div style="width:26px;height:26px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <div class="animate-beacon" style="position:absolute;width:24px;height:24px;border-radius:50%;background:#38bdf8;border:1.5px solid #7dd3fc;opacity:0.75;"></div>
+              <div style="width:12px;height:12px;background:#38bdf8;border:2px solid #ffffff;border-radius:50%;box-shadow:0 0 0 1.5px #0f172a, 0 1px 4px rgba(0,0,0,0.4);z-index:2;"></div>
             </div>
           `;
         } else {
+          iconSize = [20, 20];
+          iconAnchor = [10, 10];
           markerHtml = `
-            <div style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(15,23,42,0.85));">
+            <div style="width:20px;height:20px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
               ${
                 isMetro
                   ? `
                 <div style="
                   position:absolute;
-                  width:20px;height:20px;
+                  width:16px;height:16px;
                   border-radius:50%;
-                  border:2px solid ${dotColor};
-                  background:rgba(15, 23, 42, 0.75);
-                  box-shadow:0 0 8px ${dotColor}aa;
+                  border:1.5px solid ${dotColor}aa;
+                  background:${dotColor}20;
                 "></div>`
                   : ''
               }
               <div style="
-                width:${isMetro ? 11 : 9}px;height:${isMetro ? 11 : 9}px;
+                width:9px;height:9px;
                 background:${dotColor};
-                border:2px solid #0f172a;
+                border:2px solid #ffffff;
                 border-radius:50%;
-                box-shadow:0 0 0 1.5px #ffffff, 0 0 8px ${dotColor}cc;
+                box-shadow:0 0 0 1px #0f172a, 0 1px 3px rgba(0,0,0,0.4);
+                z-index:2;
               "></div>
             </div>
           `;
@@ -400,9 +391,9 @@ export default function TransitMap({
         const isSelectedStop = selectedStopId === stop.id;
         const icon = L.divIcon({
           className: 'transit-stop-marker',
-          html: markerHtml + (isSelectedStop ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid #22d3ee;animation:ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>` : ''),
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
+          html: markerHtml + (isSelectedStop ? `<div style="position:absolute;inset:0px;border-radius:50%;border:2px solid #22d3ee;animation:ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>` : ''),
+          iconSize,
+          iconAnchor,
         });
 
         const marker = L.marker([stop.lat, stop.lng], { icon });
@@ -459,17 +450,17 @@ export default function TransitMap({
         const busIcon = L.divIcon({
           className: 'live-bus-marker',
           html: `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.95));">
-              <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:#06b6d435;border:1.5px solid #06b6d4;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
-              <div style="width:24px;height:24px;background:#090d16;border:2px solid #22d3ee;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1.5px rgba(255,255,255,0.25), 0 0 14px #06b6d4, 0 0 4px #22d3ee;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <div style="width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <div style="position:absolute;width:26px;height:26px;border-radius:50%;background:#06b6d430;border:1.5px solid #06b6d4;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
+              <div style="width:22px;height:22px;background:#0f172a;border:2px solid #22d3ee;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #ffffff, 0 2px 4px rgba(0,0,0,0.4);z-index:2;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="15" rx="2"/><path d="M4 11h16"/><circle cx="7" cy="15" r="1.5"/><circle cx="17" cy="15" r="1.5"/>
                 </svg>
               </div>
             </div>
           `,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
         });
 
         const liveMarker = L.marker([bus.lat, bus.lng], { icon: busIcon, zIndexOffset: 2500 });
@@ -496,17 +487,17 @@ export default function TransitMap({
         const busIcon = L.divIcon({
           className: 'live-bus-marker',
           html: `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.95));">
-              <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:#10b98135;border:1.5px solid #10b981;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
-              <div style="width:24px;height:24px;background:#090d16;border:2px solid #34d399;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1.5px rgba(255,255,255,0.25), 0 0 14px #10b981, 0 0 4px #34d399;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <div style="width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <div style="position:absolute;width:26px;height:26px;border-radius:50%;background:#10b98130;border:1.5px solid #10b981;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
+              <div style="width:22px;height:22px;background:#0f172a;border:2px solid #34d399;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #ffffff, 0 2px 4px rgba(0,0,0,0.4);z-index:2;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="15" rx="2"/><path d="M4 11h16"/><circle cx="7" cy="15" r="1.5"/><circle cx="17" cy="15" r="1.5"/>
                 </svg>
               </div>
             </div>
           `,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
         });
 
         const liveBusMarker = L.marker(activePathPoints[0], { icon: busIcon, zIndexOffset: 2000 });
