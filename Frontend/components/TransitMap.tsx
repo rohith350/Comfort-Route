@@ -141,13 +141,12 @@ export default function TransitMap({
         );
         baseGroup.addLayer(maptilerStreets);
       } else {
-        // Zero-Key CartoDB Voyager Light Street Map
+        // Zero-Key OpenStreetMap Public Street Map (Clean, zero watermark, high readability)
         const streetMap = L.tileLayer(
-          'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           {
-            subdomains: 'abcd',
-            maxZoom: 20,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
           }
         );
         baseGroup.addLayer(streetMap);
@@ -642,7 +641,7 @@ export default function TransitMap({
         </div>
         <span className="hidden md:inline text-zinc-600">|</span>
         <span className="hidden md:inline text-zinc-400 font-sans">
-          {mapMode === 'satellite' ? 'Esri Hybrid Satellite' : 'CartoDB Light Street'} • OSRM
+          {mapMode === 'satellite' ? 'Esri Hybrid Satellite' : 'OpenStreetMap'} • OSRM
         </span>
       </div>
     </div>
