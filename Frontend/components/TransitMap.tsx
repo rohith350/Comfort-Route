@@ -5,6 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { ApiScoredRoute, ApiScoredStop, LiveVehiclePosition } from '@/lib/types';
 import { fetchAllRouteSegments, type RouteRoadSegment } from '@/lib/osrmService';
+import { Button } from '@/components/ui/button';
 
 interface TransitMapProps {
   /** All candidate routes for the current corridor */
@@ -113,7 +114,7 @@ export default function TransitMap({
     };
   }, [activeRoute?.id, activeRoute?.stops]);
 
-  // ─── Auto-Zoom to Active Route with horizontal padding ───
+  // ─── Auto-Zoom to Active Route with responsive padding ───
   const fitMapToActiveRoute = useCallback(() => {
     const map = mapRef.current;
     if (!map || !activeRoute || activeRoute.stops.length === 0) return;
@@ -122,13 +123,22 @@ export default function TransitMap({
     const bounds = L.latLngBounds(activeCoords);
 
     const mapSize = map.getSize();
-    // Balanced framing: drawerOpen ? left: 420 (rail + 350px drawer) : 90, right: 340 (for top-right HUD), top: 70, bottom: 70
-    const safeLeft = isDrawerOpen
+    const isMobile = mapSize.x < 768;
+
+    const safeLeft = isMobile
+      ? 24
+      : isDrawerOpen
       ? Math.max(120, Math.min(420, Math.floor(mapSize.x * 0.35)))
       : 90;
-    const safeRight = Math.max(90, Math.min(340, Math.floor(mapSize.x * 0.30)));
-    const safeTop = 70;
-    const safeBottom = 70;
+    const safeRight = isMobile
+      ? 24
+      : Math.max(90, Math.min(340, Math.floor(mapSize.x * 0.30)));
+    const safeTop = isMobile ? 68 : 70;
+    const safeBottom = isMobile
+      ? isDrawerOpen
+        ? Math.floor(mapSize.y * 0.56)
+        : 92
+      : 70;
 
     map.fitBounds(bounds, {
       paddingTopLeft: [safeLeft, safeTop],
@@ -455,48 +465,55 @@ export default function TransitMap({
       )}
 
       {/* Corridor Recenter Button */}
-      <div className="absolute bottom-5 right-16 z-[500] pointer-events-auto">
-        <button
+      <div className="absolute top-[4.25rem] right-3 md:top-auto md:bottom-5 md:right-16 z-20 pointer-events-auto">
+        <Button
+          variant="outline"
+          size="sm"
           onClick={fitMapToActiveRoute}
           title="Recenter Map to Active Corridor"
-          className="px-3 py-1.5 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 rounded-xl text-zinc-300 hover:text-white text-xs flex items-center gap-2 shadow-2xl transition-all cursor-pointer"
+          className="h-8 px-2.5 md:px-3 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border-zinc-800 hover:border-zinc-700 rounded-xl text-zinc-300 hover:text-white text-[11px] md:text-xs flex items-center gap-1.5 md:gap-2 shadow-2xl cursor-pointer"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-white" />
-          <span className="font-medium">Fit Corridor</span>
-        </button>
+          <span className="font-medium">Fit</span>
+          <span className="hidden sm:inline font-medium">Corridor</span>
+        </Button>
       </div>
 
       {/* Zoom Controls */}
-      <div className="absolute bottom-5 right-5 z-20 flex flex-col gap-1.5 pointer-events-auto">
-        <button
+      <div className="hidden md:flex absolute bottom-5 right-5 z-20 flex-col gap-1.5 pointer-events-auto">
+        <Button
+          variant="outline"
+          size="icon"
           onClick={() => mapRef.current?.zoomIn()}
           aria-label="Zoom in"
-          className="w-8 h-8 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 rounded-xl text-white font-bold flex items-center justify-center text-sm shadow-2xl cursor-pointer transition-all hover:scale-105 active:scale-95"
+          className="bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border-zinc-800 hover:border-zinc-700 rounded-xl text-white font-bold text-sm shadow-2xl cursor-pointer active:scale-95"
         >
           +
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
           onClick={() => mapRef.current?.zoomOut()}
           aria-label="Zoom out"
-          className="w-8 h-8 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 rounded-xl text-white font-bold flex items-center justify-center text-sm shadow-2xl cursor-pointer transition-all hover:scale-105 active:scale-95"
+          className="bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border-zinc-800 hover:border-zinc-700 rounded-xl text-white font-bold text-sm shadow-2xl cursor-pointer active:scale-95"
         >
           −
-        </button>
+        </Button>
       </div>
 
-      {/* Attribution & Legend (clean bottom right above zoom) */}
-      <div className="absolute bottom-5 left-20 z-20 flex items-center gap-3 text-[10px] text-zinc-400 font-mono pointer-events-none bg-zinc-950/90 backdrop-blur-xl px-3 py-1.5 rounded-full border border-zinc-800 shadow-2xl">
-        <div className="flex items-center gap-1.5 font-sans font-medium">
+      {/* Attribution & Legend */}
+      <div className="absolute top-[4.25rem] left-3 md:top-auto md:bottom-5 md:left-20 z-20 flex items-center gap-2 md:gap-3 text-[9.5px] md:text-[10px] text-zinc-400 font-mono pointer-events-none bg-zinc-950/90 backdrop-blur-xl px-2.5 py-1 md:px-3 md:py-1.5 rounded-full border border-zinc-800 shadow-2xl">
+        <div className="flex items-center gap-1 md:gap-1.5 font-sans font-medium">
           <span className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_6px_#10b981]" /> &lt;50%
         </div>
-        <div className="flex items-center gap-1.5 font-sans font-medium">
+        <div className="flex items-center gap-1 md:gap-1.5 font-sans font-medium">
           <span className="w-2 h-2 rounded-full bg-[#f59e0b] shadow-[0_0_6px_#f59e0b]" /> 50–80%
         </div>
-        <div className="flex items-center gap-1.5 font-sans font-medium">
+        <div className="flex items-center gap-1 md:gap-1.5 font-sans font-medium">
           <span className="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_6px_#ef4444]" /> &gt;80%
         </div>
-        <span className="text-zinc-600">|</span>
-        <span className="text-zinc-400 font-sans">Delhi Transit OSRM</span>
+        <span className="hidden md:inline text-zinc-600">|</span>
+        <span className="hidden md:inline text-zinc-400 font-sans">Delhi Transit OSRM</span>
       </div>
     </div>
   );

@@ -17,6 +17,8 @@ import {
   Flame,
   Zap,
   ChevronLeft,
+  ChevronDown,
+  ChevronUp,
   ShieldCheck,
   AlertTriangle,
   Radio,
@@ -38,6 +40,23 @@ import {
 } from '@/lib/api';
 import type { ApiStop, ApiPlanResponse, ApiScoredRoute, DemoScenario, LiveVehiclePosition, LiveFeedStatus } from '@/lib/types';
 import { CrowdTelemetryHud, DayOfWeek } from '@/components/CrowdTelemetryHud';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 // Dynamic Leaflet map (no SSR)
 const TransitMap = dynamic(() => import('@/components/TransitMap'), {
@@ -61,7 +80,7 @@ const DEMO_SCENARIOS: DemoScenario[] = [
   { label: '6:30 PM Evening Surge', origin: 'kashmere_gate', destination: 'nehru_place', time: '18:30' },
 ];
 
-type CommandTab = 'journey' | 'details' | 'system' | 'analytics';
+type CommandTab = 'journey' | 'details' | 'system' | 'analytics' | 'telemetry';
 
 // ─── UI Helpers ───
 function statusColorClass(status: string) {
@@ -152,8 +171,15 @@ export default function CrowdPlannerApp() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Tab State: activeTab controls drawer expansion
-  const [activeTab, setActiveTab] = useState<CommandTab | null>('journey');
+  // Tab State: activeTab controls drawer expansion (closed by default on mobile, open on desktop)
+  const [activeTab, setActiveTab] = useState<CommandTab | null>(null);
+  const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      setActiveTab('journey');
+    }
+  }, []);
   const [isSurgeDemo, setIsSurgeDemo] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Tue');
   const [isSearching, setIsSearching] = useState(false);
@@ -555,7 +581,7 @@ export default function CrowdPlannerApp() {
     : hourlyData[3];
 
   return (
-    <div className="relative h-screen w-screen bg-[#09090b] text-[#ededed] font-sans antialiased select-none overflow-hidden text-[13px]">
+    <div className="relative h-[100dvh] w-screen bg-[#09090b] text-[#ededed] font-sans antialiased select-none overflow-hidden text-[13px]">
       {/* ━━━ FULL-BLEED CENTRAL MAP (fixed inset-0, z-0) ━━━ */}
       <div className="fixed inset-0 z-0">
         <TransitMap
@@ -573,129 +599,265 @@ export default function CrowdPlannerApp() {
         />
       </div>
 
-      {/* ━━━ 1. SLIM LEFT ICON RAIL (fixed left-4 top-4 bottom-4 w-14, z-30) ━━━ */}
-      <aside className="fixed left-4 top-4 bottom-4 w-14 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl pointer-events-auto z-30 flex flex-col items-center justify-between py-4">
-        <div className="flex flex-col items-center gap-3 w-full px-2">
-          {/* Button 1: Brand / Live Feed Toggle */}
-          <button
-            onClick={() => setActiveTab(activeTab === 'system' ? null : 'system')}
-            className={`relative p-2.5 rounded-xl transition-all cursor-pointer group flex items-center justify-center w-10 h-10 ${
-              activeTab === 'system'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
-            }`}
-            title="Live System & Simulation"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]" />
-          </button>
-
-          {/* Button 2: Plan Journey */}
-          <button
-            onClick={() => setActiveTab(activeTab === 'journey' ? null : 'journey')}
-            className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center w-10 h-10 ${
-              activeTab === 'journey'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
-            }`}
-            title="Plan Journey (Origin, Destination, Suggested Routes)"
-          >
-            <Navigation className="h-4 w-4" />
-          </button>
-
-          {/* Button 3: Route Details & Live Crowd Report */}
-          <button
-            onClick={() => setActiveTab(activeTab === 'details' ? null : 'details')}
-            className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center w-10 h-10 ${
-              activeTab === 'details'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
-            }`}
-            title="Route Details & Crowd Check-In"
-          >
-            <Bus className="h-4 w-4" />
-          </button>
-
-          {/* Button 4: 24-Hour Corridor Analytics */}
-          <button
-            onClick={() => setActiveTab(activeTab === 'analytics' ? null : 'analytics')}
-            className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center w-10 h-10 ${
-              activeTab === 'analytics'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
-            }`}
-            title="24-Hour Corridor Analytics"
-          >
-            <BarChart3 className="h-4 w-4" />
-          </button>
+      {/* ━━━ MOBILE TOP COMPACT HEADER BAR (< 768px) ━━━ */}
+      <header className="md:hidden fixed top-3 left-3 right-3 z-30 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl px-3 py-2 shadow-2xl flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981] shrink-0" />
+          <span className="font-extrabold text-xs tracking-wider uppercase text-white truncate">
+            Comfort Route
+          </span>
+          <Badge variant="outline" className="h-auto text-[9px] px-1.5 py-0.5 rounded bg-zinc-900 border-zinc-800 text-zinc-300 font-mono font-bold shrink-0">
+            DELHI
+          </Badge>
         </div>
 
-        {/* Rail Bottom Action */}
-        <div className="flex flex-col items-center gap-3">
-          <button
-            onClick={handleReset}
-            className="p-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all cursor-pointer"
-            title="Reset Live Crowd Data & Simulation"
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={handleToggleSurge}
+            className={`h-7 px-2 rounded-lg text-[10px] font-semibold cursor-pointer ${
+              isSurgeDemo
+                ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 animate-pulse'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+            }`}
+            title="Toggle simulated rush surge"
           >
-            <RotateCcw className="h-4 w-4" />
-          </button>
-        </div>
-      </aside>
+            <Flame className={`h-3 w-3 ${isSurgeDemo ? 'text-red-400' : 'text-zinc-500'}`} />
+            <span>{isSurgeDemo ? 'SURGE' : 'NORM'}</span>
+          </Button>
 
-      {/* ━━━ 2. UNIFIED LEFT COMMAND DRAWER (Expandable w-[350px], z-30) ━━━ */}
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => setActiveTab(activeTab === 'telemetry' ? null : 'telemetry')}
+            className="h-7 text-[10px] font-mono font-bold text-white bg-zinc-900 border-zinc-800 hover:bg-zinc-800 px-2 rounded-lg tabular-nums cursor-pointer"
+          >
+            {displayTime(timeStr)}
+          </Button>
+        </div>
+      </header>
+
+      {/* ━━━ 1. SLIM LEFT ICON RAIL (Desktop >= 768px) ━━━ */}
+      <TooltipProvider delay={150}>
+        <aside className="hidden md:flex fixed left-4 top-4 bottom-4 w-14 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl pointer-events-auto z-30 flex-col items-center justify-between py-4">
+          <div className="flex flex-col items-center gap-3 w-full px-2">
+            {/* Button 1: Brand / Live Feed Toggle */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setActiveTab(activeTab === 'system' ? null : 'system')}
+                    className={`relative rounded-xl w-10 h-10 cursor-pointer ${
+                      activeTab === 'system'
+                        ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm hover:bg-zinc-800'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
+                    }`}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]" />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" className="bg-zinc-900 text-zinc-100 border border-zinc-800">
+                Live System & Simulation
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Button 2: Plan Journey */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setActiveTab(activeTab === 'journey' ? null : 'journey')}
+                    className={`rounded-xl w-10 h-10 cursor-pointer ${
+                      activeTab === 'journey'
+                        ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm hover:bg-zinc-800'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
+                    }`}
+                  >
+                    <Navigation className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" className="bg-zinc-900 text-zinc-100 border border-zinc-800">
+                Plan Journey
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Button 3: Route Details & Live Crowd Report */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setActiveTab(activeTab === 'details' ? null : 'details')}
+                    className={`rounded-xl w-10 h-10 cursor-pointer ${
+                      activeTab === 'details'
+                        ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm hover:bg-zinc-800'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
+                    }`}
+                  >
+                    <Bus className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" className="bg-zinc-900 text-zinc-100 border border-zinc-800">
+                Route Details & Check-In
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Button 4: 24-Hour Corridor Analytics */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setActiveTab(activeTab === 'analytics' ? null : 'analytics')}
+                    className={`rounded-xl w-10 h-10 cursor-pointer ${
+                      activeTab === 'analytics'
+                        ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm hover:bg-zinc-800'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
+                    }`}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" className="bg-zinc-900 text-zinc-100 border border-zinc-800">
+                24-Hour Corridor Analytics
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Rail Bottom Action */}
+          <div className="flex flex-col items-center gap-3">
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleReset}
+                    className="rounded-xl w-10 h-10 text-zinc-400 hover:text-white hover:bg-zinc-900 cursor-pointer"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" className="bg-zinc-900 text-zinc-100 border border-zinc-800">
+                Reset Live Crowd Data
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </aside>
+      </TooltipProvider>
+
+      {/* ━━━ 2. UNIFIED COMMAND DRAWER (Bottom Sheet on Mobile, Left Sidebar on Desktop, z-30) ━━━ */}
       <div
-        className={`fixed left-[4.75rem] top-4 bottom-4 w-[350px] z-30 rounded-2xl bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 shadow-2xl flex flex-col overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed left-2.5 right-2.5 bottom-[4.5rem] ${
+          isMobileSheetExpanded ? 'max-h-[74dvh]' : 'max-h-[46dvh]'
+        } md:left-[4.75rem] md:right-auto md:top-4 md:bottom-4 md:max-h-none md:w-[350px] z-30 rounded-2xl bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ease-out ${
           isDrawerOpen
-            ? 'opacity-100 translate-x-0 pointer-events-auto'
-            : 'opacity-0 -translate-x-8 pointer-events-none w-0 border-transparent shadow-none'
+            ? 'opacity-100 translate-y-0 md:translate-x-0 pointer-events-auto'
+            : 'opacity-0 translate-y-6 md:translate-y-0 md:-translate-x-8 pointer-events-none h-0 md:h-auto md:w-0 border-transparent shadow-none'
         }`}
       >
         {/* Subtle Top Accent Divider */}
         <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-zinc-700 to-transparent shrink-0" />
 
-        {/* ─── Consolidated Header Block ─── */}
-        <div className="px-3.5 py-2.5 border-b border-zinc-800/80 shrink-0 bg-zinc-950">
+        {/* Mobile Bottom-Sheet Drag Handle, Expand & Collapse Buttons */}
+        <div className="md:hidden flex items-center justify-between px-3 py-1.5 border-b border-zinc-800/80 bg-zinc-950 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-1 rounded-full bg-zinc-700" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-300">
+              {activeTab === 'journey' && 'Plan Journey'}
+              {activeTab === 'details' && 'Route Details'}
+              {activeTab === 'telemetry' && 'Crowd HUD & Check-In'}
+              {activeTab === 'analytics' && 'Corridor Analytics'}
+              {activeTab === 'system' && 'System Feed'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => setIsMobileSheetExpanded((prev) => !prev)}
+              className="h-6 px-2 rounded-lg text-zinc-300 hover:text-white bg-zinc-900 border-zinc-800 hover:bg-zinc-800 cursor-pointer flex items-center gap-1 text-[10px] font-medium"
+              title={isMobileSheetExpanded ? 'Compact Sheet' : 'Expand Sheet'}
+            >
+              <span>{isMobileSheetExpanded ? 'Compact' : 'Expand'}</span>
+              {isMobileSheetExpanded ? (
+                <ChevronDown className="w-3 h-3" />
+              ) : (
+                <ChevronUp className="w-3 h-3" />
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => setActiveTab(null)}
+              className="h-6 px-2 rounded-lg text-zinc-400 hover:text-white bg-zinc-900 border-zinc-800 hover:bg-zinc-800 cursor-pointer text-[10px]"
+              title="Show Full Map"
+            >
+              Map
+            </Button>
+          </div>
+        </div>
+
+        {/* ─── Consolidated Header Block (Desktop) ─── */}
+        <div className="hidden md:block px-3.5 py-2.5 border-b border-zinc-800/80 shrink-0 bg-zinc-950">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xs tracking-wider uppercase text-white">
                 Comfort Route Planner
               </span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono font-bold tracking-tight">
+              <Badge variant="outline" className="h-auto text-[9px] px-1.5 py-0.5 rounded bg-zinc-900 border-zinc-800 text-zinc-300 font-mono font-bold tracking-tight">
                 DELHI
-              </span>
+              </Badge>
             </div>
 
             {/* Collapse Drawer Chevron */}
-            <button
+            <Button
+              variant="ghost"
+              size="icon-xs"
               onClick={() => setActiveTab(null)}
-              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors cursor-pointer"
+              className="text-zinc-400 hover:text-white hover:bg-zinc-900 cursor-pointer"
               title="Collapse Drawer (90%+ Map Mode)"
             >
               <ChevronLeft className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
 
           {/* Controls Sub-Bar: Live Badge, Rush Surge Demo & Scheduled Time */}
           <div className="flex items-center justify-between gap-1.5 mt-2">
             <div className="flex items-center gap-1.5">
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-[10px] font-semibold">
+              <Badge variant="outline" className="h-auto flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 border-zinc-800 text-zinc-300 text-[10px] font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10b981]" />
                 Live Feed
-              </span>
+              </Badge>
 
               {/* Surge Demo Toggle */}
-              <button
+              <Button
+                variant="outline"
+                size="xs"
                 onClick={handleToggleSurge}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-all cursor-pointer ${
+                className={`h-5 px-2 rounded-full text-[10px] font-semibold cursor-pointer flex items-center gap-1 ${
                   isSurgeDemo
-                    ? 'bg-red-500/10 border-red-500/30 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.3)] animate-pulse'
-                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
+                    ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.3)] animate-pulse'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-zinc-800'
                 }`}
                 title="Toggle simulated rush surge"
               >
                 <Flame className={`h-2.5 w-2.5 ${isSurgeDemo ? 'text-red-400' : 'text-zinc-500'}`} />
                 <span>{isSurgeDemo ? 'SURGE ACTIVE' : 'NORM'}</span>
-              </button>
+              </Button>
             </div>
 
             <span className="text-[10px] font-mono font-semibold text-zinc-300 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-md tabular-nums">
@@ -710,42 +872,40 @@ export default function CrowdPlannerApp() {
           {activeTab === 'journey' && (
             <div className="space-y-2 animate-in fade-in slide-in-from-left-3 duration-300">
               {/* Mode Toggle: By Stops vs By Bus Number */}
-              <div className="grid grid-cols-2 gap-1 p-1 bg-zinc-950 rounded-xl border border-zinc-800 shadow-inner">
-                <button
-                  onClick={() => setSearchMode('stops')}
-                  className={`py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    searchMode === 'stops'
-                      ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <Navigation className="w-3 h-3" />
-                  <span>By Stops</span>
-                </button>
-                <button
-                  onClick={() => setSearchMode('bus_number')}
-                  className={`py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    searchMode === 'bus_number'
-                      ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <Bus className="w-3 h-3" />
-                  <span>By Bus Number</span>
-                </button>
-              </div>
+              <Tabs
+                value={searchMode}
+                onValueChange={(val) => setSearchMode(val as 'stops' | 'bus_number')}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-2 h-9 p-1 bg-zinc-950 rounded-xl border border-zinc-800">
+                  <TabsTrigger
+                    value="stops"
+                    className="rounded-lg text-xs font-semibold text-zinc-400 data-active:bg-zinc-800 data-active:text-white data-active:border data-active:border-zinc-700 cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Navigation className="w-3 h-3" />
+                    <span>By Stops</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="bus_number"
+                    className="rounded-lg text-xs font-semibold text-zinc-400 data-active:bg-zinc-800 data-active:text-white data-active:border data-active:border-zinc-700 cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Bus className="w-3 h-3" />
+                    <span>By Bus Number</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
               {/* MODE 2: INSTANT BUS NUMBER AUTOCOMPLETE SEARCH */}
               {searchMode === 'bus_number' && (
                 <div className="space-y-2 animate-in fade-in duration-200">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-zinc-400 pointer-events-none" />
-                    <input
+                    <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-zinc-400 pointer-events-none z-10" />
+                    <Input
                       type="text"
                       value={busSearchQuery}
                       onChange={(e) => setBusSearchQuery(e.target.value)}
                       placeholder="Search Bus No. (e.g., 729, 534, GL-23)"
-                      className="w-full h-8 pl-8 pr-7 text-xs bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-zinc-600 shadow-inner placeholder:text-zinc-500 font-medium"
+                      className="h-8 pl-8 pr-7 text-xs bg-zinc-950 border-zinc-800 rounded-lg text-white focus-visible:border-zinc-600 focus-visible:ring-0 placeholder:text-zinc-500 font-medium"
                       autoFocus
                     />
                     {isSearchingBus && (
@@ -813,44 +973,56 @@ export default function CrowdPlannerApp() {
                   <label className="text-[9.5px] text-zinc-400 mb-0.5 block font-semibold uppercase tracking-wider">
                     From Origin
                   </label>
-                  <select
-                    value={origin}
-                    onChange={(e) => setOrigin(e.target.value)}
-                    className="w-full h-8 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-zinc-600 appearance-none cursor-pointer hover:border-zinc-700 transition-all shadow-inner"
-                  >
-                    {originStops.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={origin} onValueChange={(val) => val && setOrigin(val)}>
+                    <SelectTrigger className="w-full h-8 bg-zinc-950 border-zinc-800 rounded-lg px-2.5 text-xs text-white hover:border-zinc-700 focus-visible:ring-0 focus-visible:border-zinc-600 cursor-pointer">
+                      <SelectValue placeholder="Select origin">{originName}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100 rounded-xl shadow-2xl">
+                      {originStops.map((s) => (
+                        <SelectItem
+                          key={s.id}
+                          value={s.id}
+                          className="text-xs focus:bg-zinc-800 focus:text-white cursor-pointer"
+                        >
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex justify-center -my-0.5">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="icon-xs"
                     onClick={handleSwap}
-                    className="p-1 rounded-full border border-zinc-800 bg-zinc-950 hover:bg-zinc-850 hover:border-zinc-700 transition-all cursor-pointer text-zinc-400 hover:text-white active:scale-95 shadow"
+                    className="rounded-full border-zinc-800 bg-zinc-950 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white active:scale-95 shadow cursor-pointer"
                     title="Swap Origin & Destination"
                   >
                     <ArrowUpDown className="h-2.5 w-2.5" />
-                  </button>
+                  </Button>
                 </div>
 
                 <div>
                   <label className="text-[9.5px] text-zinc-400 mb-0.5 block font-semibold uppercase tracking-wider">
                     To Destination
                   </label>
-                  <select
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                    className="w-full h-8 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-zinc-600 appearance-none cursor-pointer hover:border-zinc-700 transition-all shadow-inner"
-                  >
-                    {destStops.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={destination} onValueChange={(val) => val && setDestination(val)}>
+                    <SelectTrigger className="w-full h-8 bg-zinc-950 border-zinc-800 rounded-lg px-2.5 text-xs text-white hover:border-zinc-700 focus-visible:ring-0 focus-visible:border-zinc-600 cursor-pointer">
+                      <SelectValue placeholder="Select destination">{destName}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100 rounded-xl shadow-2xl">
+                      {destStops.map((s) => (
+                        <SelectItem
+                          key={s.id}
+                          value={s.id}
+                          className="text-xs focus:bg-zinc-800 focus:text-white cursor-pointer"
+                        >
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -867,9 +1039,9 @@ export default function CrowdPlannerApp() {
                   </div>
                 </div>
 
-                <div className="relative pt-3.5 pb-1">
+                <div className="relative pt-2 md:pt-5 pb-1">
                   <div
-                    className="absolute top-0 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-700 text-white shadow pointer-events-none transition-all duration-75 tabular-nums -translate-x-1/2"
+                    className="hidden md:block absolute top-0 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-700 text-white shadow pointer-events-none transition-all duration-75 tabular-nums -translate-x-1/2"
                     style={{ left: `${sliderPct}%` }}
                   >
                     {displayTime(timeStr)}
@@ -901,10 +1073,10 @@ export default function CrowdPlannerApp() {
               </div>
 
               {/* Primary "Search Routes" CTA Button (Crisp High-Contrast White) */}
-              <button
+              <Button
                 onClick={handleSearchRoutes}
                 disabled={isSearching}
-                className="w-full h-8 rounded-lg bg-white text-zinc-950 font-semibold text-xs tracking-wide hover:bg-zinc-200 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm overflow-hidden relative"
+                className="w-full h-8 rounded-lg bg-white text-zinc-950 font-semibold text-xs tracking-wide hover:bg-zinc-200 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
               >
                 {isSearching ? (
                   <>
@@ -917,22 +1089,24 @@ export default function CrowdPlannerApp() {
                     <span>Search Routes</span>
                   </>
                 )}
-              </button>
+              </Button>
 
               {/* Popular Departure Times Chips */}
               <div className="pt-0.5">
                 <div className="text-[9px] text-zinc-400 mb-1 font-semibold uppercase tracking-wider">
                   Popular Departure Times
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex overflow-x-auto whitespace-nowrap scrollbar-none md:flex-wrap gap-1 pb-0.5">
                   {DEMO_SCENARIOS.map((s) => (
-                    <button
+                    <Button
                       key={s.label}
+                      variant="outline"
+                      size="xs"
                       onClick={() => handleScenario(s)}
-                      className="px-2 py-0.5 rounded text-[9px] border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-zinc-800 transition-all cursor-pointer active:scale-95"
+                      className="shrink-0 h-5 px-2 rounded text-[9px] border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-zinc-800 cursor-pointer active:scale-95"
                     >
                       {s.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -968,14 +1142,14 @@ export default function CrowdPlannerApp() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-1.5">
-                          <span className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${tagBadgeClass(route.tag)}`}>
+                          <Badge variant="outline" className={`h-auto text-[8.5px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${tagBadgeClass(route.tag)}`}>
                             {route.tag}
-                          </span>
+                          </Badge>
                           {isTopRecommended && (
-                            <span className="relative overflow-hidden px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[8px] font-bold tracking-wider uppercase flex items-center gap-1">
+                            <Badge variant="outline" className="h-auto px-1.5 py-0.5 rounded-full bg-emerald-500/10 border-emerald-500/30 text-emerald-400 text-[8px] font-bold tracking-wider uppercase flex items-center gap-1">
                               <Sparkles className="w-2 h-2 text-emerald-400" />
                               <span>RECOMMENDED</span>
-                            </span>
+                            </Badge>
                           )}
                         </div>
 
@@ -1055,13 +1229,15 @@ export default function CrowdPlannerApp() {
             <div className="space-y-3 animate-in fade-in slide-in-from-left-3 duration-300">
               {/* Back to Routes Breadcrumb Button */}
               <div className="flex items-center justify-between">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setActiveTab('journey')}
-                  className="flex items-center gap-1.5 text-xs text-zinc-300 hover:text-white px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all font-semibold cursor-pointer active:scale-95"
+                  className="h-7 flex items-center gap-1.5 text-xs text-zinc-300 hover:text-white px-3 rounded-lg bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 font-semibold cursor-pointer active:scale-95"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back to Routes</span>
-                </button>
+                </Button>
                 <span className="text-[10px] text-zinc-400 font-mono">
                   {selectedRoute.bus_type || 'DTC Non-AC'}
                 </span>
@@ -1226,37 +1402,50 @@ export default function CrowdPlannerApp() {
                   </span>
                 </div>
 
-                <select
-                  value={selectedReportStop}
-                  onChange={(e) => setCustomReportStop(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-600 appearance-none cursor-pointer hover:border-zinc-700 transition-all shadow-inner"
-                >
-                  {selectedRoute.stops.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} {s.context_tag ? `(${s.context_tag})` : ''}
-                    </option>
-                  ))}
-                </select>
+                <Select value={selectedReportStop} onValueChange={(val) => val && setCustomReportStop(val)}>
+                  <SelectTrigger className="w-full h-8 bg-zinc-950 border-zinc-800 rounded-lg px-2.5 text-xs text-white hover:border-zinc-700 focus-visible:ring-0 focus-visible:border-zinc-600 cursor-pointer">
+                    <SelectValue placeholder="Select stop">
+                      {selectedRoute.stops.find((s) => s.id === selectedReportStop)?.name ?? 'Select stop'}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100 rounded-xl shadow-2xl">
+                    {selectedRoute.stops.map((s) => (
+                      <SelectItem
+                        key={s.id}
+                        value={s.id}
+                        className="text-xs focus:bg-zinc-800 focus:text-white cursor-pointer"
+                      >
+                        {s.name} {s.context_tag ? `(${s.context_tag})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
                 <div className="grid grid-cols-3 gap-1.5">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleCrowdReport('LOW')}
-                    className="py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 active:scale-95 transition-all cursor-pointer text-center"
+                    className="h-8 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20 hover:text-emerald-300 active:scale-95 cursor-pointer"
                   >
                     Low
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleCrowdReport('MEDIUM')}
-                    className="py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 active:scale-95 transition-all cursor-pointer text-center"
+                    className="h-8 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20 hover:text-amber-300 active:scale-95 cursor-pointer"
                   >
                     Medium
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleCrowdReport('HIGH')}
-                    className="py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 active:scale-95 transition-all cursor-pointer text-center"
+                    className="h-8 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 hover:text-red-300 active:scale-95 cursor-pointer"
                   >
                     High
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -1284,16 +1473,18 @@ export default function CrowdPlannerApp() {
                     <div className="text-[10px] text-zinc-400 mt-0.5">Simulate instant 94% crush load spike</div>
                   </div>
 
-                  <button
+                  <Button
+                    variant={isSurgeDemo ? 'destructive' : 'secondary'}
+                    size="xs"
                     onClick={handleToggleSurge}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`h-7 px-3 rounded-lg text-xs font-bold cursor-pointer ${
                       isSurgeDemo
-                        ? 'bg-red-500 text-white shadow-[0_0_16px_rgba(239,68,68,0.5)]'
-                        : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                        ? 'bg-red-500 text-white hover:bg-red-600 shadow-[0_0_16px_rgba(239,68,68,0.5)]'
+                        : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'
                     }`}
                   >
                     {isSurgeDemo ? 'SURGE ON' : 'ENABLE'}
-                  </button>
+                  </Button>
                 </div>
 
                 {/* Corridor Status Cards */}
@@ -1322,20 +1513,24 @@ export default function CrowdPlannerApp() {
                 </div>
 
                 <div className="pt-2 flex gap-2">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setActiveTab('journey')}
-                    className="flex-1 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 h-8 rounded-lg bg-zinc-950 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <span>Plan Journey</span>
                     <ExternalLink className="w-3 h-3" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setActiveTab('analytics')}
-                    className="flex-1 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 h-8 rounded-lg bg-zinc-950 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <span>View Analytics</span>
                     <BarChart3 className="w-3 h-3" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -1451,10 +1646,89 @@ export default function CrowdPlannerApp() {
               </div>
             </div>
           )}
+
+          {/* TAB 5: MOBILE CROWD TELEMETRY HUD & LIVE CHECK-IN */}
+          {activeTab === 'telemetry' && (
+            <div className="animate-in fade-in slide-in-from-bottom-3 duration-200">
+              <CrowdTelemetryHud
+                isEmbedded
+                selectedDay={selectedDay}
+                onSelectDay={handleSelectDay}
+                departureTimeStr={timeStr}
+                onSelectHour={handleSelectHourFromHud}
+                isSurgeDemo={isSurgeDemo}
+                onRefresh={handleRefreshForecast}
+                onReportCrowd={(level) => handleCrowdReport(level)}
+                onResetCrowd={handleReset}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ━━━ FLOATING TOP-RIGHT "DATE, DAY & CROWD PROBABILITY HUD" (z-30) ━━━ */}
+      {/* ━━━ MOBILE BOTTOM NAVIGATION BAR (< 768px, z-30) ━━━ */}
+      <nav
+        aria-label="Mobile navigation"
+        className="md:hidden fixed bottom-3 left-3 right-3 z-30 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl p-1.5 shadow-2xl grid grid-cols-5 gap-1"
+      >
+        <Button
+          variant="ghost"
+          onClick={() => setActiveTab(activeTab === 'journey' ? null : 'journey')}
+          className={`h-auto py-1.5 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold cursor-pointer ${
+            activeTab === 'journey' ? 'bg-zinc-800 text-white hover:bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+          }`}
+        >
+          <Navigation className="w-4 h-4" />
+          <span>Plan</span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={() => setActiveTab(activeTab === 'details' ? null : 'details')}
+          className={`h-auto py-1.5 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold cursor-pointer ${
+            activeTab === 'details' ? 'bg-zinc-800 text-white hover:bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+          }`}
+        >
+          <Bus className="w-4 h-4" />
+          <span>Route</span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={() => setActiveTab(activeTab === 'telemetry' ? null : 'telemetry')}
+          className={`relative h-auto py-1.5 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold cursor-pointer ${
+            activeTab === 'telemetry' ? 'bg-zinc-800 text-white hover:bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Check-In</span>
+          <span className="absolute top-1.5 right-4 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={() => setActiveTab(activeTab === 'analytics' ? null : 'analytics')}
+          className={`h-auto py-1.5 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold cursor-pointer ${
+            activeTab === 'analytics' ? 'bg-zinc-800 text-white hover:bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>Trends</span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={() => setActiveTab(activeTab === 'system' ? null : 'system')}
+          className={`h-auto py-1.5 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold cursor-pointer ${
+            activeTab === 'system' ? 'bg-zinc-800 text-white hover:bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+          }`}
+        >
+          <Radio className="w-4 h-4" />
+          <span>Feed</span>
+        </Button>
+      </nav>
+
+      {/* ━━━ FLOATING TOP-RIGHT "DATE, DAY & CROWD PROBABILITY HUD" (Desktop >= 768px, z-30) ━━━ */}
       <CrowdTelemetryHud
         selectedDay={selectedDay}
         onSelectDay={handleSelectDay}
@@ -1466,11 +1740,12 @@ export default function CrowdPlannerApp() {
         onResetCrowd={handleReset}
       />
 
-      {/* ━━━ Active Route Indicator when Drawer is Collapsed (z-30) ━━━ */}
+      {/* ━━━ Active Route Indicator when Drawer is Collapsed (Desktop, z-30) ━━━ */}
       {!isDrawerOpen && selectedRoute && (
-        <button
+        <Button
+          variant="outline"
           onClick={() => setActiveTab('details')}
-          className="fixed top-[22rem] right-4 z-30 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-xl px-3 py-1.5 shadow-2xl flex items-center gap-2 text-xs text-white hover:border-zinc-700 transition-all cursor-pointer group active:scale-95"
+          className="hidden md:flex fixed top-[22rem] right-4 z-30 h-auto bg-zinc-950/95 backdrop-blur-xl border-zinc-800/80 rounded-xl px-3 py-1.5 shadow-2xl items-center gap-2 text-xs text-white hover:border-zinc-700 hover:bg-zinc-900 cursor-pointer active:scale-95"
           title="Click to view Route Details"
         >
           <span className="flex items-center gap-1.5 font-bold font-mono text-[11px]">
@@ -1483,14 +1758,14 @@ export default function CrowdPlannerApp() {
           <span className="text-emerald-400 font-mono font-bold text-[11px] tabular-nums">
             Score {selectedRoute.comfort_score}
           </span>
-        </button>
+        </Button>
       )}
 
       {/* ━━━ Floating Dark-Mode Toast Notification ━━━ */}
       {toast && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[1000] bg-zinc-950/95 border border-zinc-800 text-white text-xs px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2.5 font-sans backdrop-blur-xl animate-in fade-in slide-in-from-top-3 duration-200">
+        <div className="fixed top-16 md:top-5 left-1/2 -translate-x-1/2 z-[1000] w-[calc(100vw-2rem)] max-w-md bg-zinc-950/95 border border-zinc-800 text-white text-xs px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2.5 font-sans backdrop-blur-xl animate-in fade-in slide-in-from-top-3 duration-200">
           <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-          <span className="font-semibold">{toast}</span>
+          <span className="font-semibold truncate">{toast}</span>
         </div>
       )}
     </div>

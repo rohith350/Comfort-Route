@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Clock, RotateCcw, Zap, Sparkles, CheckCircle2, Radio } from 'lucide-react';
 import type { LiveFeedStatus } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 export type DayOfWeek = typeof DAYS_OF_WEEK[number];
@@ -79,6 +81,7 @@ interface CrowdTelemetryHudProps {
   liveStatus?: LiveFeedStatus;
   onReportCrowd?: (level: 'LOW' | 'MEDIUM' | 'HIGH') => void;
   onResetCrowd?: () => void;
+  isEmbedded?: boolean;
 }
 
 export function CrowdTelemetryHud({
@@ -91,6 +94,7 @@ export function CrowdTelemetryHud({
   liveStatus,
   onReportCrowd,
   onResetCrowd,
+  isEmbedded = false,
 }: CrowdTelemetryHudProps) {
   // Live ticking digital clock
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
@@ -193,17 +197,22 @@ export function CrowdTelemetryHud({
   return (
     <aside
       aria-label="Crowd telemetry and live commuter check-in"
-      className="fixed top-4 right-4 w-[310px] z-30 rounded-2xl border border-zinc-800/80 bg-zinc-950/95 backdrop-blur-xl p-3.5 shadow-2xl flex flex-col gap-2.5 transition-all duration-300"
+      className={
+        isEmbedded
+          ? 'w-full flex flex-col gap-2.5'
+          : 'hidden md:flex fixed top-4 right-4 w-[310px] z-30 rounded-2xl border border-zinc-800/80 bg-zinc-950/95 backdrop-blur-xl p-3.5 shadow-2xl flex-col gap-2.5 transition-all duration-300'
+      }
     >
       {/* ━━━ OTD CONNECTION STATUS BADGE ━━━ */}
       {liveStatus && (
         <div className="flex items-center justify-between pb-1.5 border-b border-zinc-800">
           <span className="text-[9px] text-zinc-400 font-mono tracking-wider">DELHI OTD</span>
-          <span
-            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8.5px] font-mono font-bold tracking-wider ${
+          <Badge
+            variant="outline"
+            className={`h-auto px-2 py-0.5 rounded-full text-[8.5px] font-mono font-bold tracking-wider flex items-center gap-1.5 ${
               liveStatus.isLiveRealtime
-                ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-sm'
-                : 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-sm'
+                : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
             }`}
           >
             <span
@@ -212,7 +221,7 @@ export function CrowdTelemetryHud({
               }`}
             />
             {liveStatus.source || 'GTFS SCHEDULE + LIVE TRAFFIC'}
-          </span>
+          </Badge>
         </div>
       )}
 
@@ -230,14 +239,16 @@ export function CrowdTelemetryHud({
             <span className="text-[10px] text-zinc-400 font-mono font-medium">{formattedDate}</span>
           </div>
 
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={handleRefreshClick}
             disabled={isRefreshing}
-            className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all cursor-pointer active:scale-95 border border-transparent hover:border-zinc-800"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent hover:border-zinc-800 cursor-pointer active:scale-95"
             title="Refresh Delhi Transit Forecast"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-white' : ''}`} />
-          </button>
+          </Button>
         </div>
 
         {/* Day-of-Week Selector Pills */}
@@ -245,17 +256,19 @@ export function CrowdTelemetryHud({
           {DAYS_OF_WEEK.map((d) => {
             const isActive = d === selectedDay;
             return (
-              <button
+              <Button
                 key={d}
+                variant={isActive ? 'default' : 'outline'}
+                size="xs"
                 onClick={() => onSelectDay(d)}
-                className={`py-1 text-[10px] font-mono font-bold rounded-md transition-all cursor-pointer text-center ${
+                className={`h-6 px-0 text-[10px] font-mono font-bold rounded-md cursor-pointer ${
                   isActive
-                    ? 'bg-white text-zinc-950 border border-white shadow-sm'
-                    : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    ? 'bg-white text-zinc-950 border-white hover:bg-zinc-200 shadow-sm'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
                 }`}
               >
                 {d}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -276,8 +289,9 @@ export function CrowdTelemetryHud({
             >
               {activeProb}%
             </span>
-            <span
-              className={`text-[9px] font-bold px-1.5 py-0.5 rounded border font-mono uppercase ${
+            <Badge
+              variant="outline"
+              className={`h-auto text-[9px] font-bold px-1.5 py-0.5 rounded font-mono uppercase ${
                 activeProb >= 80
                   ? 'bg-red-500/10 border-red-500/30 text-red-400'
                   : activeProb >= 50
@@ -286,7 +300,7 @@ export function CrowdTelemetryHud({
               }`}
             >
               {dayCategory}
-            </span>
+            </Badge>
           </div>
         </div>
 
@@ -376,13 +390,15 @@ export function CrowdTelemetryHud({
             </span>
           </div>
 
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={handleReset}
-            className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
             title="Reset reported crowds"
           >
             <RotateCcw className="w-3 h-3" />
-          </button>
+          </Button>
         </div>
 
         <div className="text-[10px] text-zinc-400">
@@ -390,24 +406,30 @@ export function CrowdTelemetryHud({
         </div>
 
         <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => handleReport('LOW')}
-            className="py-1 px-2 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1"
+            className="h-7 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20 hover:text-emerald-300 active:scale-95 cursor-pointer"
           >
             Low
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => handleReport('MEDIUM')}
-            className="py-1 px-2 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1"
+            className="h-7 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20 hover:text-amber-300 active:scale-95 cursor-pointer"
           >
             Medium
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => handleReport('HIGH')}
-            className="py-1 px-2 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1"
+            className="h-7 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 hover:text-red-300 active:scale-95 cursor-pointer"
           >
             High
-          </button>
+          </Button>
         </div>
 
         {checkInFeedback && (
