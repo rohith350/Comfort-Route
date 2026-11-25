@@ -46,7 +46,7 @@ export default function TransitMap({
   const liveBusMarkerRef = useRef<L.Marker | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
-  const [mapMode, setMapMode] = useState<MapMode>('satellite');
+  const [mapMode, setMapMode] = useState<MapMode>('street');
   const [roadSegments, setRoadSegments] = useState<RouteRoadSegment[]>([]);
   const [loadingGeometry, setLoadingGeometry] = useState(false);
 
@@ -141,11 +141,12 @@ export default function TransitMap({
         );
         baseGroup.addLayer(maptilerStreets);
       } else {
-        // Zero-Key OpenStreetMap Public Street Map (Clean, zero watermark, high readability)
+        // Zero-Key OpenStreetMap Public Street Map (Midnight Slate filter applied via CSS)
         const streetMap = L.tileLayer(
           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           {
             maxZoom: 19,
+            className: 'midnight-slate-tiles',
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
           }
         );
@@ -267,9 +268,9 @@ export default function TransitMap({
         if (segment.coordinates.length < 2) return;
         activePathPoints.push(...segment.coordinates);
 
-        // Dark outer casing line (6px, #0f172a, opacity 0.85)
+        // Dark outer casing line (6px, #05070c, opacity 0.85)
         const casing = L.polyline(segment.coordinates, {
-          color: '#0f172a',
+          color: '#05070c',
           weight: 6,
           opacity: 0.85,
           lineCap: 'round',
@@ -310,7 +311,7 @@ export default function TransitMap({
       const color = getNeonColor(activeRoute.overall_occupancy_pct);
 
       const casing = L.polyline(coords, {
-        color: '#0f172a',
+        color: '#05070c',
         weight: 6,
         opacity: 0.85,
         lineCap: 'round',
@@ -347,7 +348,7 @@ export default function TransitMap({
           markerHtml = `
             <div style="width:26px;height:26px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
               <div class="animate-beacon" style="position:absolute;width:24px;height:24px;border-radius:50%;background:#10b981;border:1.5px solid #34d399;opacity:0.75;"></div>
-              <div style="width:12px;height:12px;background:#10b981;border:2px solid #ffffff;border-radius:50%;box-shadow:0 0 0 1.5px #0f172a, 0 1px 4px rgba(0,0,0,0.4);z-index:2;"></div>
+              <div style="width:12px;height:12px;background:#10b981;border:2px solid #ffffff;border-radius:50%;box-shadow:0 0 0 1.5px #05070c, 0 1px 4px rgba(0,0,0,0.5);z-index:2;"></div>
             </div>
           `;
         } else if (isDestination) {
@@ -356,7 +357,7 @@ export default function TransitMap({
           markerHtml = `
             <div style="width:26px;height:26px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
               <div class="animate-beacon" style="position:absolute;width:24px;height:24px;border-radius:50%;background:#38bdf8;border:1.5px solid #7dd3fc;opacity:0.75;"></div>
-              <div style="width:12px;height:12px;background:#38bdf8;border:2px solid #ffffff;border-radius:50%;box-shadow:0 0 0 1.5px #0f172a, 0 1px 4px rgba(0,0,0,0.4);z-index:2;"></div>
+              <div style="width:12px;height:12px;background:#38bdf8;border:2px solid #ffffff;border-radius:50%;box-shadow:0 0 0 1.5px #05070c, 0 1px 4px rgba(0,0,0,0.5);z-index:2;"></div>
             </div>
           `;
         } else {
@@ -381,7 +382,7 @@ export default function TransitMap({
                 background:${dotColor};
                 border:2px solid #ffffff;
                 border-radius:50%;
-                box-shadow:0 0 0 1px #0f172a, 0 1px 3px rgba(0,0,0,0.4);
+                box-shadow:0 0 0 1px #05070c, 0 1px 3px rgba(0,0,0,0.5);
                 z-index:2;
               "></div>
             </div>
@@ -555,8 +556,20 @@ export default function TransitMap({
 
       {/* Map Mode Switcher Pill & Corridor Recenter Button */}
       <div className="absolute top-[4.25rem] right-3 md:top-auto md:bottom-5 md:right-16 z-20 pointer-events-auto flex items-center gap-1.5 md:gap-2">
-        {/* Compact Toggle Pill (Satellite | Street Map) */}
+        {/* Compact Toggle Pill (Street Map | Satellite) */}
         <div className="flex items-center p-0.5 rounded-xl glass-control-elevated">
+          <button
+            type="button"
+            onClick={() => setMapMode('street')}
+            aria-pressed={mapMode === 'street'}
+            className={`px-2 py-1 md:px-2.5 rounded-lg text-[10.5px] md:text-[11px] font-medium transition-all duration-150 cursor-pointer ${
+              mapMode === 'street'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Street Map
+          </button>
           <button
             type="button"
             onClick={() => setMapMode('satellite')}
@@ -568,18 +581,6 @@ export default function TransitMap({
             }`}
           >
             Satellite
-          </button>
-          <button
-            type="button"
-            onClick={() => setMapMode('street')}
-            aria-pressed={mapMode === 'street'}
-            className={`px-2 py-1 md:px-2.5 rounded-lg text-[10.5px] md:text-[11px] font-medium transition-all duration-150 cursor-pointer ${
-              mapMode === 'street'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Street Map
           </button>
         </div>
 
@@ -632,7 +633,7 @@ export default function TransitMap({
         </div>
         <span className="hidden md:inline text-zinc-600">|</span>
         <span className="hidden md:inline text-zinc-400 font-sans">
-          {mapMode === 'satellite' ? 'Esri Hybrid Satellite' : 'OpenStreetMap'} • OSRM
+          {mapMode === 'street' ? 'Midnight Slate Street' : 'Esri Hybrid Satellite'} • OSRM
         </span>
       </div>
     </div>

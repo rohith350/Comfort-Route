@@ -151,8 +151,9 @@ input[type="range"].custom-slider::-moz-range-thumb {
   font-family: inherit !important;
 }
 
-.dark-map-tiles .leaflet-tile {
-  filter: brightness(0.55) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.15) brightness(0.65);
+/* Midnight Slate Street Map tile filter (rich dark aesthetic + crisp labels, leaves overlays untouched) */
+.midnight-slate-tiles .leaflet-tile {
+  filter: invert(100%) hue-rotate(180deg) brightness(92%) contrast(96%) saturate(85%) !important;
 }
 
 /* Ensure Leaflet markers & tooltips stay at z-20 (below z-30 floating cards) */
