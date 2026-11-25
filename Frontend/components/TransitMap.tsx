@@ -28,6 +28,8 @@ function getNeonColor(loadPct: number): string {
   return '#10b981'; // Vibrant Emerald
 }
 
+type MapMode = 'satellite' | 'dark';
+
 export default function TransitMap({
   routes,
   selectedRouteId,
@@ -39,10 +41,12 @@ export default function TransitMap({
 }: TransitMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const baseLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const liveBusMarkerRef = useRef<L.Marker | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  const [mapMode, setMapMode] = useState<MapMode>('satellite');
   const [roadSegments, setRoadSegments] = useState<RouteRoadSegment[]>([]);
   const [loadingGeometry, setLoadingGeometry] = useState(false);
 
@@ -59,10 +63,8 @@ export default function TransitMap({
       attributionControl: false,
     });
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      className: 'dark-map-tiles',
-    }).addTo(map);
+    const baseGroup = L.layerGroup().addTo(map);
+    baseLayerGroupRef.current = baseGroup;
 
     const layer = L.layerGroup().addTo(map);
     mapRef.current = map;
@@ -80,8 +82,62 @@ export default function TransitMap({
       }
       map.remove();
       mapRef.current = null;
+      baseLayerGroupRef.current = null;
+      layerRef.current = null;
     };
   }, []);
+
+  // ─── Manage Base Tile Layers (Hybrid Satellite vs Dark Map) ───
+  useEffect(() => {
+    const baseGroup = baseLayerGroupRef.current;
+    if (!baseGroup) return;
+
+    baseGroup.clearLayers();
+
+    if (mapMode === 'satellite') {
+      const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY;
+      if (maptilerKey) {
+        // MapTiler Hybrid raster tiles
+        const maptilerHybrid = L.tileLayer(
+          `https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=${maptilerKey}`,
+          {
+            maxZoom: 19,
+            attribution: '&copy; MapTiler &copy; OpenStreetMap contributors',
+          }
+        );
+        baseGroup.addLayer(maptilerHybrid);
+      } else {
+        // Zero-Key Esri World Imagery (Satellite)
+        const esriImagery = L.tileLayer(
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          {
+            maxZoom: 19,
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+          }
+        );
+        baseGroup.addLayer(esriImagery);
+
+        // Transparent Reference Labels, Neighborhoods & Highways overlay
+        const esriLabels = L.tileLayer(
+          'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+          {
+            maxZoom: 19,
+            opacity: 0.95,
+            zIndex: 2,
+          }
+        );
+        baseGroup.addLayer(esriLabels);
+      }
+    } else {
+      // Dark-themed Street Map
+      const osmDark = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        className: 'dark-map-tiles',
+        attribution: '&copy; OpenStreetMap contributors',
+      });
+      baseGroup.addLayer(osmDark);
+    }
+  }, [mapMode]);
 
   const activeRoute = routes.find((r) => r.id === selectedRouteId) ?? routes[0] ?? null;
 
@@ -171,16 +227,25 @@ export default function TransitMap({
       animationFrameRef.current = null;
     }
 
-    // 1. Draw unselected routes as subtle dashed lines
+    // 1. Draw unselected routes as subtle dashed lines with dark casing
     routes.forEach((route) => {
       if (route.id === activeRoute?.id) return;
       const coords: [number, number][] = route.stops.map((s) => [s.lat, s.lng]);
       if (coords.length < 2) return;
 
+      const unselectedCasing = L.polyline(coords, {
+        color: '#090d16',
+        weight: 5,
+        opacity: 0.8,
+        dashArray: '6, 8',
+        lineCap: 'round',
+      });
+      layer.addLayer(unselectedCasing);
+
       const unselectedLine = L.polyline(coords, {
-        color: '#475569',
-        weight: 3,
-        opacity: 0.35,
+        color: '#64748b',
+        weight: 2.5,
+        opacity: 0.5,
         dashArray: '6, 8',
         lineCap: 'round',
       });
@@ -190,27 +255,37 @@ export default function TransitMap({
 
     const activePathPoints: [number, number][] = [];
 
-    // 2. Dual-Layer Neon Road Polylines
+    // 2. High-Contrast Neon Road Polylines with Dark Casing Stroke
     if (roadSegments.length > 0) {
       roadSegments.forEach((segment) => {
         if (segment.coordinates.length < 2) return;
         activePathPoints.push(...segment.coordinates);
 
-        // Halo / Outer Glow
+        // Tier 1: Soft Outer Neon Halo
         const halo = L.polyline(segment.coordinates, {
           color: segment.color,
-          weight: 10,
-          opacity: 0.25,
+          weight: 12,
+          opacity: 0.35,
           lineCap: 'round',
           lineJoin: 'round',
         });
         layer.addLayer(halo);
 
-        // Core Crisp Neon Line
+        // Tier 2: Dark Outer Casing Stroke (#090d16) to ensure separation against bright satellite terrain
+        const casing = L.polyline(segment.coordinates, {
+          color: '#090d16',
+          weight: 7,
+          opacity: 0.95,
+          lineCap: 'round',
+          lineJoin: 'round',
+        });
+        layer.addLayer(casing);
+
+        // Tier 3: Core Crisp Neon Line
         const core = L.polyline(segment.coordinates, {
           color: segment.color,
-          weight: 4,
-          opacity: 0.95,
+          weight: 3.5,
+          opacity: 1,
           lineCap: 'round',
           lineJoin: 'round',
         });
@@ -233,17 +308,24 @@ export default function TransitMap({
 
       const halo = L.polyline(coords, {
         color,
-        weight: 10,
-        opacity: 0.25,
+        weight: 12,
+        opacity: 0.35,
+        lineCap: 'round',
+      });
+      const casing = L.polyline(coords, {
+        color: '#090d16',
+        weight: 7,
+        opacity: 0.95,
         lineCap: 'round',
       });
       const core = L.polyline(coords, {
         color,
-        weight: 4,
-        opacity: 0.95,
+        weight: 3.5,
+        opacity: 1,
         lineCap: 'round',
       });
       layer.addLayer(halo);
+      layer.addLayer(casing);
       layer.addLayer(core);
     }
 
@@ -259,41 +341,42 @@ export default function TransitMap({
 
         if (isOrigin) {
           markerHtml = `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.9));">
               <div class="animate-beacon" style="position:absolute;width:34px;height:34px;border-radius:50%;background:#10b981;border:2px solid #34d399;opacity:0.8;"></div>
               <div style="position:absolute;width:24px;height:24px;border-radius:50%;background:#10b98125;"></div>
-              <div style="width:14px;height:14px;background:#10b981;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 14px #10b981, 0 0 4px #ffffff;"></div>
+              <div style="width:14px;height:14px;background:#10b981;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 0 2px #090d16, 0 0 14px #10b981, 0 0 4px #ffffff;"></div>
             </div>
           `;
         } else if (isDestination) {
           markerHtml = `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.9));">
               <div class="animate-beacon" style="position:absolute;width:34px;height:34px;border-radius:50%;background:#38bdf8;border:2px solid #7dd3fc;opacity:0.8;"></div>
               <div style="position:absolute;width:24px;height:24px;border-radius:50%;background:#38bdf825;"></div>
-              <div style="width:14px;height:14px;background:#38bdf8;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 14px #38bdf8, 0 0 4px #ffffff;"></div>
+              <div style="width:14px;height:14px;background:#38bdf8;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 0 0 2px #090d16, 0 0 14px #38bdf8, 0 0 4px #ffffff;"></div>
             </div>
           `;
         } else {
           markerHtml = `
-            <div style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <div style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.92));">
               ${
                 isMetro
                   ? `
                 <div style="
                   position:absolute;
-                  width:18px;height:18px;
+                  width:20px;height:20px;
                   border-radius:50%;
-                  border:1.5px solid ${dotColor}88;
-                  background:${dotColor}15;
+                  border:2px solid ${dotColor};
+                  background:rgba(9, 13, 22, 0.75);
+                  box-shadow:0 0 8px ${dotColor}aa;
                 "></div>`
                   : ''
               }
               <div style="
                 width:${isMetro ? 11 : 9}px;height:${isMetro ? 11 : 9}px;
                 background:${dotColor};
-                border:2px solid #07090c;
+                border:2px solid #090d16;
                 border-radius:50%;
-                box-shadow:0 0 8px ${dotColor}cc;
+                box-shadow:0 0 0 1.5px #ffffffdd, 0 0 8px ${dotColor}cc;
               "></div>
             </div>
           `;
@@ -361,10 +444,10 @@ export default function TransitMap({
         const busIcon = L.divIcon({
           className: 'live-bus-marker',
           html: `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-              <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:#06b6d435;border:1px solid #06b6d488;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
-              <div style="width:22px;height:22px;background:#08131d;border:2px solid #22d3ee;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px #06b6d4, 0 0 4px #22d3ee;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.95));">
+              <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:#06b6d435;border:1.5px solid #06b6d4;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
+              <div style="width:24px;height:24px;background:#090d16;border:2px solid #22d3ee;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1.5px rgba(255,255,255,0.25), 0 0 14px #06b6d4, 0 0 4px #22d3ee;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="15" rx="2"/><path d="M4 11h16"/><circle cx="7" cy="15" r="1.5"/><circle cx="17" cy="15" r="1.5"/>
                 </svg>
               </div>
@@ -398,10 +481,10 @@ export default function TransitMap({
         const busIcon = L.divIcon({
           className: 'live-bus-marker',
           html: `
-            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-              <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:#10b98135;border:1px solid #10b98188;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
-              <div style="width:22px;height:22px;background:#06140e;border:2px solid #34d399;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px #10b981, 0 0 4px #34d399;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.95));">
+              <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:#10b98135;border:1.5px solid #10b981;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
+              <div style="width:24px;height:24px;background:#090d16;border:2px solid #34d399;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1.5px rgba(255,255,255,0.25), 0 0 14px #10b981, 0 0 4px #34d399;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="15" rx="2"/><path d="M4 11h16"/><circle cx="7" cy="15" r="1.5"/><circle cx="17" cy="15" r="1.5"/>
                 </svg>
               </div>
@@ -464,16 +547,45 @@ export default function TransitMap({
         </div>
       )}
 
-      {/* Corridor Recenter Button */}
-      <div className="absolute top-[4.25rem] right-3 md:top-auto md:bottom-5 md:right-16 z-20 pointer-events-auto">
+      {/* Map Mode Switcher Pill & Corridor Recenter Button */}
+      <div className="absolute top-[4.25rem] right-3 md:top-auto md:bottom-5 md:right-16 z-20 pointer-events-auto flex items-center gap-1.5 md:gap-2">
+        {/* Compact Toggle Pill (Satellite | Dark Map) */}
+        <div className="flex items-center p-0.5 rounded-xl bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 shadow-2xl">
+          <button
+            type="button"
+            onClick={() => setMapMode('satellite')}
+            aria-pressed={mapMode === 'satellite'}
+            className={`px-2 py-1 md:px-2.5 rounded-lg text-[10.5px] md:text-[11px] font-medium transition-all duration-150 cursor-pointer ${
+              mapMode === 'satellite'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Satellite
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapMode('dark')}
+            aria-pressed={mapMode === 'dark'}
+            className={`px-2 py-1 md:px-2.5 rounded-lg text-[10.5px] md:text-[11px] font-medium transition-all duration-150 cursor-pointer ${
+              mapMode === 'dark'
+                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Dark Map
+          </button>
+        </div>
+
+        {/* Fit Corridor Button */}
         <Button
           variant="outline"
           size="sm"
           onClick={fitMapToActiveRoute}
           title="Recenter Map to Active Corridor"
-          className="h-8 px-2.5 md:px-3 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border-zinc-800 hover:border-zinc-700 rounded-xl text-zinc-300 hover:text-white text-[11px] md:text-xs flex items-center gap-1.5 md:gap-2 shadow-2xl cursor-pointer"
+          className="h-7 md:h-8 px-2 md:px-3 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border-zinc-800 hover:border-zinc-700 rounded-xl text-zinc-300 hover:text-white text-[10.5px] md:text-xs flex items-center gap-1 md:gap-1.5 shadow-2xl cursor-pointer"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
           <span className="font-medium">Fit</span>
           <span className="hidden sm:inline font-medium">Corridor</span>
         </Button>
@@ -513,7 +625,9 @@ export default function TransitMap({
           <span className="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_6px_#ef4444]" /> &gt;80%
         </div>
         <span className="hidden md:inline text-zinc-600">|</span>
-        <span className="hidden md:inline text-zinc-400 font-sans">Delhi Transit OSRM</span>
+        <span className="hidden md:inline text-zinc-400 font-sans">
+          {mapMode === 'satellite' ? 'Esri Hybrid Satellite' : 'Dark Map'} • OSRM
+        </span>
       </div>
     </div>
   );
