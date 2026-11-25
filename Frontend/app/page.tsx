@@ -38,7 +38,7 @@ import {
   fetchLiveVehiclePositions,
   fetchRouteByBusId,
 } from '@/lib/api';
-import type { ApiStop, ApiPlanResponse, ApiScoredRoute, DemoScenario, LiveVehiclePosition, LiveFeedStatus } from '@/lib/types';
+import type { ApiStop, ApiPlanResponse, ApiScoredRoute, DemoScenario, LiveVehiclePosition, BusSearchResult, ApiDetailedStop } from '@/lib/types';
 import { CrowdTelemetryHud, DayOfWeek } from '@/components/CrowdTelemetryHud';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -176,9 +176,13 @@ export default function CrowdPlannerApp() {
   const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-      setActiveTab('journey');
-    }
+    const handleInitialTab = () => {
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        setActiveTab((prev) => (prev === null ? 'journey' : prev));
+      }
+    };
+    const raf = requestAnimationFrame(handleInitialTab);
+    return () => cancelAnimationFrame(raf);
   }, []);
   const [isSurgeDemo, setIsSurgeDemo] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Tue');
@@ -189,11 +193,10 @@ export default function CrowdPlannerApp() {
   // Search Mode: 'stops' (From/To) vs 'bus_number' (Instant GTFS Autocomplete)
   const [searchMode, setSearchMode] = useState<'stops' | 'bus_number'>('stops');
   const [busSearchQuery, setBusSearchQuery] = useState('');
-  const [busSearchResults, setBusSearchResults] = useState<any[]>([]);
+  const [busSearchResults, setBusSearchResults] = useState<BusSearchResult[]>([]);
   const [isSearchingBus, setIsSearchingBus] = useState(false);
 
   // Live Delhi GTFS-Realtime Telemetry State
-  const [liveFeedStatus, setLiveFeedStatus] = useState<LiveFeedStatus | undefined>(undefined);
   const [liveBuses, setLiveBuses] = useState<LiveVehiclePosition[]>([]);
 
   const isDrawerOpen = activeTab !== null;
@@ -265,7 +268,7 @@ export default function CrowdPlannerApp() {
         bus_numbers: busNumbers,
       };
     });
-  }, [planData?.routes]);
+  }, [planData]);
 
   const selectedRoute = useMemo(
     () => displayRoutes.find((r) => r.id === selectedRouteId) ?? displayRoutes[0] ?? null,
@@ -287,8 +290,8 @@ export default function CrowdPlannerApp() {
   useEffect(() => {
     if (searchMode !== 'bus_number') return;
     let active = true;
-    setIsSearchingBus(true);
     const delayTimer = setTimeout(() => {
+      setIsSearchingBus(true);
       searchGtfsRoutes(busSearchQuery).then((results) => {
         if (active) {
           setBusSearchResults(results);
@@ -305,21 +308,19 @@ export default function CrowdPlannerApp() {
 
   // Live Delhi GTFS-Realtime Telemetry Polling (every 10 seconds)
   useEffect(() => {
-    const routeId = selectedRoute?.bus_numbers[0] || '729';
+    const routeId = selectedRoute?.bus_numbers?.[0] || '729';
     fetchLiveVehiclePositions(routeId).then((res) => {
-      if (res.feedStatus) setLiveFeedStatus(res.feedStatus);
       if (res.positions) setLiveBuses(res.positions);
     });
 
     const interval = setInterval(() => {
       fetchLiveVehiclePositions(routeId).then((res) => {
-        if (res.feedStatus) setLiveFeedStatus(res.feedStatus);
         if (res.positions) setLiveBuses(res.positions);
       });
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [selectedRoute?.id]);
+  }, [selectedRoute?.bus_numbers]);
 
   // Fetch plan asynchronously whenever query params or day change
   useEffect(() => {
@@ -389,7 +390,7 @@ export default function CrowdPlannerApp() {
   };
 
   // Select route from Bus Autocomplete
-  const handleSelectBusFromSearch = async (routeItem: any) => {
+  const handleSelectBusFromSearch = async (routeItem: BusSearchResult) => {
     setLoading(true);
     showToast(`Loading Delhi GTFS Route ${routeItem.route_short_name}…`);
     try {
@@ -410,7 +411,7 @@ export default function CrowdPlannerApp() {
           comfort_score: Math.max(10, Math.round(100 - details.route.avg_crowd_pct)),
           comfort_headline: `${Math.round(100 - details.route.avg_crowd_pct)}% Seats Open`,
           category: details.route.avg_crowd_pct > 80 ? 'fastest' : 'comfortable',
-          stops: details.stops.map((s: any) => ({
+          stops: details.stops.map((s: ApiDetailedStop) => ({
             id: s.stop_id,
             name: s.stop_name,
             lat: s.stop_lat,

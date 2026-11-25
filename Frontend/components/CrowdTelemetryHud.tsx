@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Clock, RotateCcw, Zap, Sparkles, CheckCircle2, Radio } from 'lucide-react';
+import { Clock, RotateCcw, Zap, Sparkles, CheckCircle2 } from 'lucide-react';
 import type { LiveFeedStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -103,11 +103,14 @@ export function CrowdTelemetryHud({
   const [checkInFeedback, setCheckInFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    setCurrentTime(new Date());
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    return () => clearInterval(timer);
+    const raf = requestAnimationFrame(() => setCurrentTime(new Date()));
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(timer);
+    };
   }, []);
 
   // Parse active departure hour

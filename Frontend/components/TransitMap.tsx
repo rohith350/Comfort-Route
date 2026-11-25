@@ -184,7 +184,7 @@ export default function TransitMap({
     return () => {
       active = false;
     };
-  }, [activeRoute?.id, activeRoute?.stops]);
+  }, [activeRoute]);
 
   // ─── Auto-Zoom to Active Route with responsive padding ───
   const fitMapToActiveRoute = useCallback(() => {
@@ -540,7 +540,7 @@ export default function TransitMap({
         animationFrameRef.current = requestAnimationFrame(animateBus);
       }
     }
-  }, [routes, activeRoute, roadSegments, onSelectRoute]);
+  }, [routes, activeRoute, roadSegments, onSelectRoute, liveBuses, onSelectStop, selectedStopId]);
 
   return (
     <div className="relative w-full h-full bg-[#07090c] overflow-hidden select-none">

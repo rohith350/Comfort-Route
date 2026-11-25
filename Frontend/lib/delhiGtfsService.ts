@@ -85,7 +85,6 @@ class DelhiGtfsService {
       if (fs.existsSync(stopsPath)) {
         const stopsContent = await fs.promises.readFile(stopsPath, 'utf-8');
         const lines = stopsContent.split(/\r?\n/).filter((l) => l.trim().length > 0);
-        const headers = lines[0].split(',').map((h) => h.trim());
 
         for (let i = 1; i < lines.length; i++) {
           const cols = lines[i].split(',').map((c) => c.trim());
@@ -313,7 +312,7 @@ class DelhiGtfsService {
           const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(buffer));
           const liveBuses: LiveVehiclePosition[] = [];
 
-          feed.entity.forEach((entity: any) => {
+          feed.entity.forEach((entity: GtfsRealtimeBindings.transit_realtime.IFeedEntity) => {
             if (entity.vehicle && entity.vehicle.position) {
               const vRoute = entity.vehicle.trip?.routeId;
               if (!routeId || vRoute === routeId || String(vRoute).includes(routeId)) {
